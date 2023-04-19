@@ -3,5 +3,6 @@
     "NOTE_TYPE_NAME": "WaniKani Sync",
     "DECK_NAME": "WaniKani Sync",
     "LAST_UPDATE": "",
-    "LAST_SYNC": ""
+    "LAST_SYNC": "",
+    "SYNC_ALL": false
 }
