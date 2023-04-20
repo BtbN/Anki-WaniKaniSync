@@ -1,0 +1,44 @@
+{{#Reading_Whitelist}}
+<span id="level">-</span>
+<div id="question-display">{{Characters}}</div>
+<div id="question-name"></div>
+<div class="input">{{type:card_id}}</div>
+
+<!-- Kana input -->
+<script src="_wanakana.min.js"></script>
+<script>
+var answerDiv = document.getElementById("typeans");
+if (answerDiv !== null && ["TEXTAREA", "INPUT"].includes(answerDiv.nodeName)) {
+	answerDiv.setAttribute("placeholder", "Your Response");
+	if (`{{Card}}` !== "Meaning") {
+		wanakana.bind(answerDiv);
+		answerDiv.style.fontFamily = "Hiragino Kaku Gothic Pro W3";
+	}
+}
+</script>
+
+<script>
+var questionName = "{{Card}}";
+if ("{{Card_Type}}" === "Radical") {
+	questionName = "Name";
+}
+
+var questionNameDiv = document.getElementById("question-name");
+questionNameDiv.innerHTML = "{{Card_Type}} <b>" + questionName + "</b>";
+var questionDisplayDiv = document.getElementById("question-display");
+
+if ("{{Card_Type}}" == "Radical") {
+	questionDisplayDiv.classList.add("radical");
+} else if ("{{Card_Type}}" == "Kanji") {
+	questionDisplayDiv.classList.add("kanji");
+} else if ("{{Card_Type}}" == "Vocabulary") {
+	questionDisplayDiv.classList.add("vocabulary");
+}
+
+if ("{{Card}}" === "Meaning") {
+	questionNameDiv.classList.add("meaning");
+} else if ("{{Card}}" === "Reading") {
+	questionNameDiv.classList.add("reading");
+}
+</script>
+{{/Reading_Whitelist}}

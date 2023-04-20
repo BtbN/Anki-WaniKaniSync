@@ -1,0 +1,472 @@
+{{FrontSide}}
+
+<!--
+The Template is divided into sections.
+Sections get turned off based on which Card Type is displayed.
+-->
+
+<div id=card-back>
+
+<!-- Correct Answers Section -->
+<!--For: Radical, Kanji, Vocabulary-->
+<div>
+	<br>Correct Answers<hr>
+	<p id="correct"></p>
+</div>
+
+<!--Radical Combination Section-->
+<!--For: Kanji-->
+<div id=section-radical-combination>
+	Radical Combination<hr>
+	<div id=combination></div>
+</div>
+
+<!--Meaning Section-->
+<!--For: Radical, Kanji, Vocabulary-->
+
+<div id=section-meaning>
+	<div id=meaning-title></div>
+	<p id=meanings></p>
+	<p class="explanation">Explanation</p>
+	<div class="mnemonic">{{Meaning_Mnemonic}}</div>
+	<div id="meaning-hint">
+		<div class="mnemonic-hint">
+			<p class="hint"><img src="_hint.png" width="12" height="12">
+			<b style="vertical-align: top">HINTS</b><br></p>{{Meaning_Hint}}
+		</div>
+	</div>
+</div>
+
+<!--Reading Section-->
+<!--For: Kanji, Vocabulary-->
+
+<div id=section-reading>
+  <details>
+	<summary>Reading<hr></summary>
+	<div id=vocabulary-reading>{{Reading}}</div>
+	<div id=kanji-readings>
+		<div id=reading-container>
+			<div id=onyomi-readings>On’yomi<br>{{Reading_Onyomi}}</div>
+			<div id=kunyomi-readings>Kun’yomi<br>{{Reading_Kunyomi}}</div>
+			<div id=nanori-readings>Nanori<br>{{Reading_Nanori}}</div>
+		</div>
+	</div>
+	<div id="reading-audios">{{Audio}}</div>
+	<p class="explanation">Explanation</p>
+	<div class="mnemonic">{{Reading_Mnemonic}}</div>
+	<div id="reading-hint">
+		<div class="mnemonic-hint">
+			<p class="hint"><img src="_hint.png" width="9" height="9">
+			<b>HINTS</b><br></p>{{Reading_Hint}}
+		</div>
+	</div>
+  </details>
+</div>
+
+<!--Context Section-->
+<!--For: Vocabulary-->
+<div id=section-context>
+	Context<hr>
+	<div id="context-patterns">
+		<div id="patterns-of-use">
+			<p class="explanation">Patterns of Use</p>
+		</div>
+		<div id="common-word-combinations">
+			<p class="explanation">Common Word Combinations</p>
+		</div>
+	</div>
+	<p class="explanation">Context Sentences</p>
+	<div id="context-sentences"></div>
+</div>
+
+<!--Box Section-->
+<!--For: Radical, Kanji, Vocabulary-->
+<div id=section-box>
+	<div id=box-title></div>
+	<div id=box-container></div>
+</div>
+
+<!--Found in Vocabulary Section-->
+<!--For: Kanji-->
+<div id=section-found-in-vocabulary>
+	Found in Vocabulary<hr>
+	<div id=found-in-vocabulary-container></div>
+</div>
+
+</div> <!-- id=card-back -->
+
+<!-- Level indicator -->
+<script>
+var level = `{{Tags}}`.match(/Lesson_(\d+)/)[1];
+document.getElementById("level").innerHTML = level;
+</script>
+
+<!--SCRIPT: Slice meanings and insert into the Meaning Section.-->
+<script>
+var title = "Meaning<hr>";
+if ("{{Card_Type}}" == "Radical") {
+	var title = "Name<hr>";
+}
+var div = document.getElementById("meaning-title");
+var element = document.createElement("p");
+element.innerHTML = title;
+div.appendChild(element);
+
+var meanings = "{{Meaning}}";
+var array = meanings.split(",");
+var primary = array[0];
+var alternative = array.splice(1);
+var wordtype = "{{Word_Type}}";
+
+var div = document.getElementById("meanings");
+var element = document.createElement("p");
+element.innerHTML = "<b>PRIMARY </b>" + primary.toString().toUpperCase();
+div.appendChild(element);
+
+if (alternative.toString().length !== 0) {
+	var element = document.createElement("p");
+	element.innerHTML = "<b>ALTERNATIVE </b>" + alternative.toString().toUpperCase();
+	div.appendChild(element);
+}
+
+if (wordtype.toString().length !== 0) {
+	var element = document.createElement("p");
+	element.innerHTML = "<b>WORD TYPE </b>" + wordtype.toString().toUpperCase();
+	div.appendChild(element);
+}
+</script>
+
+<!--SCRIPT: Disable unused Reading divisions.-->
+<script>
+function disable_reading_div(id, readings) {
+	var div = document.getElementById(id);
+	if (readings === "") {
+		div.style.display = "none";
+	} else {
+		div.style.display = "";
+	}
+}
+
+disable_reading_div("onyomi-readings", `{{Reading_Onyomi}}`);
+disable_reading_div("kunyomi-readings", `{{Reading_Kunyomi}}`);
+disable_reading_div("nanori-readings", `{{Reading_Nanori}}`);
+</script>
+
+<!--SCRIPT: Disable unused Hint divisions.-->
+<script>
+function disable_hint_div(id, readings) {
+	var div = document.getElementById(id);
+	if (readings === "") {
+		div.style.display = "none";
+	} else {
+		div.style.display = "";
+	}
+}
+
+disable_hint_div("meaning-hint", `{{Meaning_Hint}}`);
+disable_hint_div("reading-hint", `{{Reading_Hint}}`);
+</script>
+
+<!--SCRIPT: Slice and add Context Patterns -->
+<script>
+var combinations = `{{Context_Patterns}}`;
+var combinationsarray = combinations.split("|");
+
+for (var i = 1; i < 6; i+=2){
+	var div = document.getElementById('common-word-combinations');
+	var element = document.createElement("p");
+	element.innerHTML = "<ja>" + combinationsarray[0].split(";")[i] + "</ja><br>" + combinationsarray[0].split(";")[i + 1];
+	element.setAttribute("id", i);
+	if (combinationsarray[0].split(";")[i] === undefined) {
+		element.innerHTML = "<br>"; 
+	}
+	div.appendChild(element);
+}
+
+for (var i = 0; i < combinationsarray.length; i++){
+	var div = document.getElementById("patterns-of-use")
+	var element = document.createElement("div");
+	element.innerHTML = "<button class=notclicked id=button name='" + i + "' onclick='Click()'>" + combinationsarray[i].split(";")[0] + "</button><br>";
+	div.appendChild(element);
+}
+
+var element = document.getElementsByName('0')[0];
+element.classList.add("notclicked");
+element.classList.add("clicked");
+
+function Click() {
+	var z = event.target.name;
+
+	for (var i = 0; i < combinationsarray.length; i++){
+		var element = document.getElementsByName(i)[0]
+		element.classList.remove("clicked");
+		element.classList.add("notclicked");
+	}
+
+	var element = document.getElementsByName(event.target.name)[0]
+	element.classList.add("clicked");
+	element.classList.remove("notclicked");
+
+	for (var i = 1; i < combinationsarray[z].length; i+=2){
+		document.getElementById(i).innerHTML = "<ja>" + combinationsarray[z].split(";")[i] + "</ja><br>" + combinationsarray[z].split(";")[i + 1];
+		if (combinationsarray[z].split(";")[i] === undefined) {
+			document.getElementById(i).innerHTML = " ";
+		}
+	}	
+}		
+if (combinations.length === 0) {
+	document.getElementById('context-patterns').innerHTML = " ";
+}	
+</script>
+
+<!--SCRIPT: Slice and add context sentences.-->
+<script>
+if ("{{Card_Type}}" == "Vocabulary") {
+	var sentences = `{{Context_Sentences}}`;
+	var array = sentences.split("|");
+
+	var div = document.getElementById("context-sentences");
+
+	function appendContextSentence(en, jp) {
+		if (jp !== "") {
+			var element = document.createElement("p");
+			element.innerHTML = "<p><ja>" + jp + "</ja><br>" + en + "</p>";
+			div.appendChild(element);
+		}
+	}
+	appendContextSentence(array[0].toString(), array[1].toString());
+	appendContextSentence(array[2].toString(), array[3].toString());
+	appendContextSentence(array[4].toString(), array[5].toString());
+}
+</script>
+
+<!--SCRIPT: Disable divisions.-->
+<script>
+var readingsection = document.getElementById("section-reading")
+var meaningsection = document.getElementById("section-meaning")
+var contextsection = document.getElementById("section-context")
+var combinationsection = document.getElementById("section-radical-combination")
+var foundinvocabularysection = document.getElementById("section-found-in-vocabulary")
+
+if ("{{Card_Type}}" === "Radical") {
+	readingsection.style.display = "none";
+	contextsection.style.display = "none";
+	combinationsection.style.display = "none";
+	foundinvocabularysection.style.display = "none";
+}
+if ("{{Card_Type}}" === "Kanji") {
+	contextsection.style.display = "none";
+	compositionsection.style.display = "none";
+} 
+if ("{{Card_Type}}" === "Vocabulary") {
+	combinationsection.style.display = "none";
+	foundinvocabularysection.style.display = "none";
+} 
+</script>
+
+<!--SCRIPT: Populate Box Characters (Found in Kanji, Visually Similar Kanji and Kanji Composition).-->
+<script>
+if ("{{Card_Type}}" == "Radical") {
+	var character = "{{Found_in_Characters}}";
+	var characterarray = character.split(", ");
+	var meaning = "{{Found_in_Meaning}}";
+	var meaningarray = meaning.split(", ");
+	var reading = "{{Found_in_Reading}}";
+	var readingarray = reading.split(", ");
+
+	if (character.toString().length !== 0) {
+		var div = document.getElementById("box-title")
+		var element = document.createElement("div");
+		element.innerHTML = "Found In Kanji<hr>";
+		div.appendChild(element);
+
+		for (var i = 0; i < characterarray.length; i++) {
+			var div = document.getElementById("box-container")
+			var element = document.createElement("div");
+			element.innerHTML = "<div id=box-character>" + characterarray[i] + "<div id=box-meaning>" + readingarray[i] + "<br>" + meaningarray[i] + "</div></div>";
+			div.appendChild(element);
+		}
+	}
+} else if ("{{Card_Type}}" == "Kanji") {
+	var character = "{{Similar_Characters}}";
+	var characterarray = character.split(", ");
+	var meaning = "{{Similar_Meaning}}";
+	var meaningarray = meaning.split(", ");
+	var reading = "{{Similar_Reading}}";
+	var readingarray = reading.split(", ");
+
+	if (character.toString().length !== 0) {
+		var div = document.getElementById("box-title")
+		var element = document.createElement("div");
+		element.innerHTML = "Visually Similar Kanji<hr>";
+		div.appendChild(element);
+
+		for (var i = 0; i < characterarray.length; i++) {
+			var div = document.getElementById("box-container");
+			var element = document.createElement("div");
+			element.innerHTML = "<div id=box-character>" + characterarray[i] + "<div id=box-meaning>" + readingarray[i] + "<br>" + meaningarray[i].toString().substring(0, 15) + "</div></div>";
+			div.appendChild(element);
+		}
+	}
+} else if ("{{Card_Type}}" == "Vocabulary") {
+	var character = `{{Components_Characters}}`;
+	var characterarray = character.split(", ");
+	var meaning = "{{Components_Meaning}}";
+	var meaningarray = meaning.split(", ");
+	var reading = "{{Components_Reading}}";
+	var readingarray = reading.split(", ");
+
+	if (character.toString().length !== 0) {
+		var div = document.getElementById("box-title")
+		var element = document.createElement("div");
+		element.innerHTML = "Kanji Composition<hr>";
+		div.appendChild(element);
+
+		for (var i = 0; i < characterarray.length; i++) {
+			var div = document.getElementById("box-container")
+			var element = document.createElement("div");
+			element.innerHTML = "<div id=box-character>" + characterarray[i] + "<div id=box-meaning>" + readingarray[i] + "<br>" + meaningarray[i].toString().substring(0, 15) + "</div></div>";
+			div.appendChild(element);
+		}
+	}
+}
+</script>
+
+<!--SCRIPT: Add Radical Combination Characters.-->
+<script>
+var character = `{{Components_Characters}}`;
+var characterarray = character.split(", ");
+var meaning = "{{Components_Meaning}}";
+var meaningarray = meaning.split(", ");
+
+for (var i = 0; i < meaningarray.length; i++){
+	var div = document.getElementById("combination")
+	var element = document.createElement("div");
+
+	element.innerHTML = "<radical-combination>"+ characterarray[i] + "</radical-combination>" + "" + meaningarray[i].toString().substring(0, 15) + "";
+	div.appendChild(element);
+
+	if (i + 1 != characterarray.length) {
+		var div = document.getElementById("combination")
+		var element = document.createElement("p");
+		element.innerHTML = "<div class=combination-plus><b>+<b/></div>";
+		div.appendChild(element);
+	}
+}
+</script>
+
+<!--SCRIPT: Add Found in Vocabulary Characters.-->
+<script>
+var character = "{{Found_in_Characters}}";
+var characterarray = character.split(", ");
+var meaning = "{{Found_in_Meaning}}";
+var meaningarray = meaning.split(", ");
+var reading = "{{Found_in_Reading}}";
+var readingarray = reading.split(", ");
+
+for (var i = 0; i < characterarray.length; i++){
+	var div = document.getElementById("found-in-vocabulary-container")
+	var element = document.createElement("div");
+	element.innerHTML = "<div id=found-in-vocabulary-box><div class=found-in-voc>"+ characterarray[i] +"</div><div class=found-in-voc-reading>" + readingarray[i] +"<br>" + meaningarray[i] +"</div></div>";
+	div.appendChild(element);
+}
+
+if (character.toString().length == 0) {
+	var foundinvocabularysection = document.getElementById("section-found-in-vocabulary")
+	foundinvocabularysection.style.display = "none";
+}
+</script>
+
+<!--SCRIPT: Check the answer -->
+<script>
+//some addons read the script too early:
+var typedAnswer_element = document.getElementById("typeans");
+if (typedAnswer_element) {
+	var typedAnswer = "";
+	typedAnswer_element.innerHTML = typedAnswer_element.innerHTML.replace(/<br.*/, "");
+	typedAnswer_element.querySelectorAll(".typeGood, .typeBad").forEach((e) => {
+		if (e.innerText == "-") return;
+		typedAnswer += e.innerText;
+	});
+	var typedAnswerLower = typedAnswer.toLowerCase();
+} else {
+	var typedAnswerLower = "";
+}
+
+var meaningWhitelist = `{{Meaning_Whitelist}}`.toLowerCase().split(", ");
+var readingWhitelist = `{{Reading_Whitelist}}`.toLowerCase().split(", ");
+var correctAnswers = [];
+var correctText = document.getElementById("correct");
+
+if (`{{Card}}` === "Meaning") {
+	var capitalize = (array) => (array.map((elem) => (elem.trimRight().replace(/(^| )\w/g, c => c.toUpperCase()))));
+
+	correctAnswers = `{{Meaning}}`.toLowerCase().split(", ");
+	var accepted = [];
+	var alternative = capitalize(`{{Meaning}}`.toLowerCase().split(", ").splice(1));
+	meaningWhitelist.forEach((correct) => {
+		if (!correctAnswers.includes(correct)) {
+			correctAnswers.push(correct);
+			accepted.push(correct);
+		}
+	});
+
+	var meanings = capitalize(correctAnswers);
+	accepted = capitalize(accepted);
+
+	correctText.innerHTML = "Primary: <b>" + meanings[0] + "</b>";
+	if (meanings.length > 1) {
+		correctText.innerHTML += "<br>Alternative: <b>" + alternative.join(", ") + "</b>";
+	}
+	if (accepted.length > 0) {
+		correctText.innerHTML += "<br>Accepted: <b>" + accepted.join(", ") + "</b>";
+	}
+} else if (`{{Card}}` === "Reading") {
+	correctAnswers = readingWhitelist;
+	var items = [];
+	correctAnswers.forEach((x) => {
+		items.push("<reading>" + x + "</reading>");
+	});
+	correctText.innerHTML = items.join(" ");
+}
+
+if (typedAnswerLower != "") {
+	var answerDiv = document.createElement("div");
+	answerDiv.setAttribute("id", "typeans");
+	answerDiv.innerHTML = typedAnswer;
+	if (`{{Card}}` !== "Meaning") {
+		answerDiv.style.fontFamily = "Hiragino Kaku Gothic Pro W3";
+	}
+	document.getElementById("typeans").replaceWith(answerDiv);
+
+	if (typedAnswerLower === "") {
+		answerDiv.style.display = "none";
+  } else if (typedAnswerLower.split(/[、,]\s*/).every(v => correctAnswers.includes(v))) {
+		answerDiv.classList.add("correct");
+	} else {
+		answerDiv.classList.add("incorrect");
+	}
+} else {
+	document.getElementsByClassName("input")[0].style.display = "none";
+	document.getElementsByClassName("input")[0].style.display = "none";
+}
+</script>
+
+<!-- Generate tooltips -->
+<script>
+function setTooltips(tags, text) {
+	for (var i = 0; i < tags.length; i++) {
+		tags[i].setAttribute("title", text);
+	}
+}
+
+var kanji = document.getElementsByTagName("kanji");
+var radicals = document.getElementsByTagName("radical");
+var vocab = document.getElementsByTagName("vocabulary");
+var reading = document.getElementsByTagName("reading");
+
+setTooltips(kanji, "Kanji");
+setTooltips(radicals, "Radical");
+setTooltips(vocab, "Vocabulary");
+setTooltips(reading, "Reading");
+</script>

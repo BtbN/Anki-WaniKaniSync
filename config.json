@@ -3,6 +3,7 @@
     "NOTE_TYPE_NAME": "WaniKani Sync",
     "DECK_NAME": "WaniKani Sync",
     "SYNC_ALL": false,
+    "SYNC_DUE_TIME": true,
     "REPORT_REVIEWS": true,
     "_LAST_SUBJECTS_SYNC": "",
     "_LAST_ASSIGNMENTS_SYNC": ""

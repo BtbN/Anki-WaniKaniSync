@@ -1,0 +1,561 @@
+@font-face {
+	font-family: "Hiragino Kaku Gothic Pro W3";
+	src: url("_hirakakyprow3.otf");
+}
+
+@font-face {
+	font-family: "Open Sans";
+	src: url("_OpenSans.ttf");
+}
+
+@font-face {
+	font-family: "Ubuntu";
+	src: url("_Ubuntu.ttf");
+}
+
+.nightMode #card-back {
+	color: darkgray;
+}
+
+.nightMode #combination {
+	color: darkgray;
+}
+
+.nightMode.card {
+	background-image: none;
+}
+
+.nightMode #button {
+	background-color: var(--button-color-dark);
+}
+
+.mobile .notclicked#button:hover {
+	background-color: var(--button-color-dark);
+}
+
+.mobile .clicked#button:hover {
+	background-color: var(--button-color-dark);
+}
+
+.mobile #button {
+	width: max(120px);
+}
+
+.mobile #box-character {
+	padding: 0px 15px 10px 15px;
+	font-size: 58px;
+}
+
+.mobile #box-meaning {
+	font-size: 20%;
+}
+
+.mobile .found-in-voc-reading {
+	font-size: 10px;
+	padding-top: 3px;
+	padding-bottom: 2px;
+}
+
+.mobile .found-in-voc {
+	font-size: 24px;
+	padding-top: 0px;
+	padding-bottom: 4px;
+}
+
+.mobile.card.nightMode {
+	color:white;
+}
+
+:root {
+	--background-color-light: #black;
+	--background-color-dark: #E1E1E1;
+	--font-color-dark: #333333;
+	--font-color-light: white;
+	--hint-color: #555555;
+	--meaning-color: #777777;
+	--meaning-sub-color: #616161;
+	--shadow-color: darkgray;
+	--kanji-color: #f100a1;
+	--kanji-color-dark: #b30077;
+	--reading-color: #484848;
+	--reading-color-dark: #0a0a0a;
+	--radical-color: #00a0f1;
+	--radical-color-dark: #0077b2;
+	--vocab-color: #9e00ed;
+	--vocab-color-dark: #7600b1;
+	--incorrect-color: #f03;
+	--correct-color: #88cc00;
+	--incorrect-color-dark: #f03;
+	--correct-color-dark: #88cc00;
+	--button-color-dark: #616161;
+	--button-color-light: #E0E0E0;
+	--button-color-hover: #BDBDBD;
+}
+
+.card {
+	font-family: "Open Sans";
+	font-size: 20px;
+	text-align: center;
+	color: black;
+	margin: 10px;
+	background-image: url(_back.png);
+}
+
+.card-front {
+	font-size: 150px;
+	text-align: center;
+}
+
+#card-back {
+	font-size: 26px;
+	text-align: left;
+	color: var(--font-color-dark);
+	max-width: 76.1ch;
+	padding: 2%;
+	margin: auto;
+}
+
+kanji {
+	background-color: var(--kanji-color);
+	box-shadow: 0px 2px var(--kanji-color-dark);
+	color: var(--font-color-light);
+	padding: 2px;
+	margin: 0px 2px 0px 0px;
+	border-radius: 4px;
+}
+
+reading {
+	background-color: var(--reading-color);
+	box-shadow: 0px 2px var(--reading-color-dark);
+	color: var(--font-color-light);
+	padding: 2px;
+	margin: 0px 2px 0px 0px;
+	border-radius: 4px;
+}
+
+radical {
+	background-color: var(--radical-color);
+	box-shadow: 0px 2px var(--radical-color-dark);
+	color: var(--font-color-light);
+	padding: 2px;
+	margin: 0px 2px 0px 0px;
+	border-radius: 4px;
+}
+
+vocabulary {
+	background-color: var(--vocab-color);
+	box-shadow: 0px 2px var(--vocab-color-dark);
+	color: var(--font-color-light);
+	padding: 2px;
+	margin: 0px 2px 0px 0px;
+	border-radius: 4px;
+}
+
+.meaning {
+	background-image: linear-gradient(to bottom, #efefef, #e0e0e0);
+	box-shadow: 0px 1px 5px 0px var(--shadow-color);
+	color: var(--font-color-dark);
+	line-height: 40px;
+}
+
+.reading {
+	background-image: linear-gradient(to bottom, #323232, #000000);
+	color: var(--font-color-light);
+	line-height: 40px;
+}
+
+.radical {
+	font-family: "Hiragino Kaku Gothic Pro W3";
+	font-size: 100px;
+	color: var(--font-color-light);
+	background-color: var(--radical-color);
+}
+
+.kanji {
+	font-family: "Hiragino Kaku Gothic Pro W3";
+	font-size: 100px;
+	color: var(--font-color-light);
+	background-color: var(--kanji-color);
+}
+
+.vocabulary {
+	font-family: "Hiragino Kaku Gothic Pro W3";
+	font-size: 100px;
+	color: var(--font-color-light);
+	background-color: var(--vocab-color);
+}
+
+#meanings {
+	font-size: 14px;
+	line-height: 0.5;
+}
+
+.explanation {
+	font-family: "Open Sans";
+	font-size: 18px;
+	margin: 10px 0px 10px 0px;
+}
+
+.mnemonic {
+	font-size: 16px;
+	font-family: "Ubuntu";
+	line-height: 1.6;
+	margin: 0px 0px 10px 0px;
+}
+
+.mnemonic-hint {
+	font-size: 16px;
+	font-family: "Ubuntu";
+	background-color: var(--background-color-dark);
+	color: var(--font-color-dark);
+	padding: 10px 20px 20px 20px;
+	margin: 0px 0px 10px 0px;
+}
+
+.hint {
+	font-size: 11px;
+	color: var(--hint-color);
+}
+
+#vocabulary-reading {
+	font-size: 18px;
+	font-family: "Hiragino Kaku Gothic Pro W3";
+	color: var(--meaning-color);
+}
+
+#reading-container {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-around;
+}
+
+#kanji-readings {
+	font-size: 16px;
+	line-height: 2;
+	font-family: "Hiragino Kaku Gothic Pro W3";
+	color: var(--meaning-color);
+}
+
+#context-patterns {
+	font-family: "Ubuntu";
+	display: flex;
+	margin: -10px 10px 15px 0px;
+}
+
+#common-word-combinations {
+	box-shadow: -10px 0 5px -10px #8888;
+	padding: 0px 0px 0px 20px;
+}
+
+ja {
+	font-family: "Hiragino Kaku Gothic Pro W3";
+}
+
+#button {
+	padding: 10px 1px 10px 10px;
+	margin: 0px 0px 4px 0px;
+	text-align: left;
+	font-size: 14px;
+	background: none;
+	border-radius: 6px 0px 0px 6px;
+	border: none;
+	width: max(140px);
+}
+
+.notclicked#button {
+	font-family: "Hiragino Kaku Gothic Pro W3";
+	background-color: var(--button-color-light);
+	transition-duration: 0.2s;
+}
+
+.clicked#button {
+	font-family: "Hiragino Kaku Gothic Pro W3";
+	color: var(--font-color-light);
+	background-color: var(--button-color-dark);
+	transition-duration: 0.2s;
+	clip-path: polygon(100% 100%, 100% 85%, 90% 50%, 100% 15%, 100% 0, 0 0, 0 100%);
+}
+
+.notclicked#button:hover {
+	background-color: var(--button-color-hover);
+}
+
+.clicked#button:hover {
+	background-color: var(--button-color-hover);
+}
+
+#button:focus {
+	outline: 0;
+}
+
+#context-sentences {
+	font-size: 16px;
+	font-family: "Ubuntu";
+}
+
+#patterns-of-use {
+	font-size: 15px;
+	margin: 0px -30px 30px 0px;
+}
+
+#common-word-combinations {
+	font-size: 16px;
+	margin: 0px 30px 3px;
+}
+
+#box-container {
+	display: flex;
+	align-items: right;
+	flex-wrap: wrap;
+}
+
+#box-character {
+	font-family: "Hiragino Kaku Gothic Pro W3";
+	font-size: 72px;
+	color: var(--font-color-light);
+	background-image: linear-gradient(to bottom, #f0a, #dd0093);
+	border-top: 1px solid #f6c;
+	border-bottom: 1px solid #cc0088;
+	border-left: 1px solid #f6c;
+	text-align: center;
+	padding: 0px 20px 10px 20px;
+	text-shadow: 0px 1px var(--kanji-color-dark);
+	overflow: hidden;
+}
+
+#box-meaning {
+	font-size: 14px;
+	margin: 0px -100px 0px -100px;
+}
+
+radical-combination {
+	font-family: "Hiragino Kaku Gothic Pro W3";
+	font-size: 24px;
+	color: white;
+	background-color: var(--radical-color);
+	box-shadow: 0px 2px var(--radical-color-dark);
+	padding: 5px 8px;
+	margin: 0px 12px 0px -0px;
+	border-radius: 4px;
+}
+
+#combination {
+	font-size: 20px;
+	display: flex;
+	align-items: center;
+	margin-bottom: 20px;
+}
+
+.combination-plus {
+	font-size: 25px;
+	margin: 0px 15px 0px 15px;
+}
+
+.found-in-voc {
+	font-family: "Hiragino Kaku Gothic Pro W3";
+	font-size: 26px;
+	background-image: linear-gradient(to bottom, #9B3AF8, #8631D6);
+	width: 50%;
+	padding: 9px;
+	background-color: #a0f;
+	background-image: linear-gradient(to bottom, #a0f, #9300dd);
+	border-top: 1px solid #a0f;
+	border-color: #c655ff transparent #80c #c655ff;
+}
+
+.found-in-voc-reading {
+	font-family: "Hiragino Kaku Gothic Pro W3";
+	font-size: 10px;
+	width: 50%;
+	background-color: #a0f;
+	background-image: linear-gradient(to bottom, #a0f, #9300dd);
+	border-top: 1px solid #a0f;
+	border-color: #c655ff transparent #80c #c655ff;
+	text-align: right;
+	padding: 15px;
+}
+
+#found-in-vocabulary-box {
+	display: flex;
+	color: white;
+}
+
+#section-found-in-vocabulary {
+	margin: 10px 0px 0px 0px;
+}
+
+#typeans {
+	box-shadow: 0px 2px 3px 0px var(--shadow-color);
+	line-height: 40px;
+	text-align: center;
+	height: 40px;
+	border: 0;
+	outline-style: none;
+	font-family: arial;
+	font-size: 20px;
+	margin-top: 5px;
+}
+
+.correct {
+	background: var(--correct-color)!important;
+	color: var(--font-color-light);
+}
+
+.incorrect {
+	background: var(--incorrect-color)!important;
+	color: var(--font-color-light);
+}
+
+.replay-button svg {
+	display:none;
+}
+
+.replay-button:before {
+	content: '▶';
+	font-size: 18px;
+	color: var(--meaning-color);
+}
+
+@font-face {
+	font-family: "WakaFont";
+	src: url("_WakaFont.ttf");
+}
+
+@import url("_WakaFont.ttf");
+.radical-bar:before,
+.radical-bear:before,
+.radical-beggar:before,
+.radical-blackjack:before,
+.radical-cactus:before,
+.radical-cape:before,
+.radical-chinese:before,
+.radical-cleat:before,
+.radical-comb:before,
+.radical-coral:before,
+.radical-corn:before,
+.radical-creeper:before,
+.radical-death-star:before,
+.radical-egg:before,
+.radical-elf:before,
+.radical-explosion:before,
+.radical-gladiator:before,
+.radical-grass:before,
+.radical-gun:before,
+.radical-hat:before,
+.radical-hills:before,
+.radical-horns:before,
+.radical-kick:before,
+.radical-leaf:before,
+.radical-morning:before,
+.radical-pope:before,
+.radical-psychopath:before,
+.radical-satellite:before,
+.radical-spikes:before,
+.radical-spring:before,
+.radical-squid:before,
+.radical-stick:before,
+.radical-tofu:before,
+.radical-trash:before,
+.radical-triceratops:before,
+.radical-trident:before,
+.radical-viking:before,
+.radical-worm:before,
+.radical-yurt:before,
+.radical-zombie:before {
+	display: inline-block;
+	font-family: "WakaFont";
+	font-style: normal;
+	font-weight: normal;
+	font-variant: normal;
+	line-height: 1;
+	text-decoration: inherit;
+	text-rendering: optimizeLegibility;
+	text-transform: none;
+	-moz-osx-font-smoothing: grayscale;
+	-webkit-font-smoothing: antialiased;
+	font-smoothing: antialiased;
+}
+
+.radical-bar:before { content: "\f102"; }
+.radical-bear:before { content: "\f103"; }
+.radical-beggar:before { content: "\f104"; }
+.radical-blackjack:before { content: "\f106"; }
+.radical-cactus:before { content: "\f10a"; }
+.radical-cape:before { content: "\f110"; }
+.radical-chinese:before { content: "\f10d"; }
+.radical-cleat:before { content: "\f10f"; }
+.radical-comb:before { content: "\f113"; }
+.radical-coral:before { content: "\f13e"; }
+.radical-corn:before { content: "\f114"; }
+.radical-creeper:before { content: "\f116"; }
+.radical-death-star:before { content: "\f117"; }
+.radical-egg:before { content: "\f118"; }
+.radical-elf:before { content: "\f155"; }
+.radical-explosion:before { content: "\f119"; }
+.radical-gladiator:before { content: "\f157"; }
+.radical-grass:before { content: "\f121"; }
+.radical-gun:before { content: "\f123"; }
+.radical-hat:before { content: "\f124"; }
+.radical-hills:before { content: "\f127"; }
+.radical-horns:before { content: "\f128"; }
+.radical-kick:before { content: "\f12a"; }
+.radical-leaf:before { content: "\f12c"; }
+.radical-morning:before { content: "\f12e"; }
+.radical-pope:before { content: "\f135"; }
+.radical-psychopath:before { content: "\f138"; }
+.radical-satellite:before { content: "\f156"; }
+.radical-spikes:before { content: "\f144"; }
+.radical-spring:before { content: "\f14b"; }
+.radical-squid:before { content: "\f146"; }
+.radical-stick:before { content: "\f147"; }
+.radical-tofu:before { content: "\f149"; }
+.radical-trash:before { content: "\f107"; }
+.radical-triceratops:before { content: "\f14c"; }
+.radical-trident:before { content: "\f14d"; }
+.radical-viking:before { content: "\f150"; }
+.radical-worm:before { content: "\f153"; }
+.radical-yurt:before { content: "\f126"; }
+.radical-zombie:before { content: "\f154"; }
+
+/* Level Indicator */
+#question-display {
+	position: relative;
+}
+#level {
+	position: absolute;
+	z-index: 999;
+	left: 20px;
+	top: 20px;
+	background-color: #a1a1a1;
+	background-image: linear-gradient(#a6a6a6, #999);
+	color: #d5d5d5;
+	text-shadow: 0 -1px 0 rgb(0 0 0 / 20%), 0 1px 0 rgb(255 255 255 / 50%);
+	display: inline-block;
+	width: 48px;
+	height: 48px;
+	line-height: 48px;
+	text-align: center;
+	box-shadow: 0 -3px 0 rgb(0 0 0 / 20%) inset;
+	text-decoration: none;
+	font-size: 27px;
+	border-radius: 3px;
+	margin: 0 10px 10px 0;
+}
+.mobile #level {
+	width: 32px;
+	height: 32px;
+	line-height: 32px;
+	font-size: 18px;
+}
+
+/* Correct Answers */
+#correct {
+	font-size: 16px;
+}
+#correct reading {
+	font-size: 20px;
+	font-family: "Hiragino Kaku Gothic Pro W3";
+}
+.mobile #correct reading {
+	font-size: 24px;
+}
