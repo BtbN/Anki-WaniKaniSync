@@ -2,7 +2,8 @@
     "WK_API_KEY": "",
     "NOTE_TYPE_NAME": "WaniKani Sync",
     "DECK_NAME": "WaniKani Sync",
-    "LAST_UPDATE": "",
-    "LAST_SYNC": "",
-    "SYNC_ALL": false
+    "SYNC_ALL": false,
+    "REPORT_REVIEWS": true,
+    "_LAST_SUBJECTS_SYNC": "",
+    "_LAST_ASSIGNMENTS_SYNC": ""
 }
