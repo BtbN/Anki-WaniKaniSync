@@ -1,3 +1,4 @@
+from anki.importing.noteimp  import NoteImporter, ForeignNote
 from aqt import mw, gui_hooks
 from aqt.utils import showInfo, qconnect
 from aqt.qt import *
@@ -12,23 +13,31 @@ def wknow():
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
+class WKImporter(NoteImporter):
+    FIELDS = [
+        "card_id", "sort_id", "Characters", "Card_Type", "Word_Type",
+        "Meaning", "Meaning_Mnemonic", "Meaning_Hint", "Meaning_Whitelist",
+        "Reading", "Reading_Onyomi", "Reading_Kunyomi", "Reading_Nanori", "Reading_Whitelist", "Reading_Mnemonic", "Reading_Hint",
+        "Components_Characters", "Components_Meaning", "Components_Reading",
+        "Similar_Characters", "Similar_Meaning", "Similar_Reading",
+        "Found_in_Characters", "Found_in_Meaning", "Found_in_Reading",
+        "Context_Patterns", "Context_Sentences",
+        "Audio"
+    ]
+
+    def __init__(self, *args, **kwargs):
+        NoteImporter.__init__(self, *args, **kwargs)
+
+
 def ensure_deck(note_name, deck_name):
     model = mw.col.models.by_name(note_name)
     if not model:
         model = mw.col.models.new(note_name)
 
-        fields = [
-            "card_id", "sort_id", "Characters", "Card_Type", "Word_Type",
-            "Meaning", "Meaning_Mnemonic", "Meaning_Hint", "Meaning_Whitelist",
-            "Reading", "Reading_Onyomi", "Reading_Kunyomi", "Reading_Nanori", "Reading_Mnemonic", "Reading_Hint",
-            "Components_Characters", "Components_Meaning", "Components_Reading",
-            "Similar_Characters", "Similar_Meaning", "Similar_Reading",
-            "Found_in_Characters", "Found_in_Meaning", "Found_in_Reading",
-            "Context_Patterns", "Context_Sentences",
-            "Audio"
-        ]
-        for field in fields:
+        for field in WKImporter.FIELDS:
             mw.col.models.add_field(model, mw.col.models.new_field(field))
+
+        mw.col.models.set_sort_index(model, 2)
 
         datadir = pathlib.Path(__file__).parent.resolve() / "data"
 
@@ -37,16 +46,10 @@ def ensure_deck(note_name, deck_name):
         meaning_tpl["afmt"] = (datadir / "meaning_back.html").read_text(encoding="utf-8")
         mw.col.models.add_template(model, meaning_tpl)
 
-        showInfo(meaning_tpl["qfmt"])
-        showInfo(meaning_tpl["afmt"])
-
         reading_tpl = mw.col.models.new_template("Reading")
         reading_tpl["qfmt"] = (datadir / "reading_front.html").read_text(encoding="utf-8")
         reading_tpl["afmt"] = (datadir / "reading_back.html").read_text(encoding="utf-8")
         mw.col.models.add_template(model, reading_tpl)
-
-        showInfo(reading_tpl["qfmt"])
-        showInfo(reading_tpl["afmt"])
 
         model["css"] = (datadir / "style.css").read_text(encoding="utf-8")
 
@@ -59,6 +62,14 @@ def ensure_deck(note_name, deck_name):
         deck = mw.col.decks.get(deck_id)
         deck["mid"] = model["id"]
         mw.col.decks.save(deck)
+        
+        model["did"] = deck_id
+        mw.col.models.update_dict(model)
+
+
+
+def ensure_cards(subjects):
+    pass
 
 
 def get_available_subject_ids(config):
@@ -95,7 +106,7 @@ def do_sync():
     for i in range(0, len(subject_ids), chunk_size):
         sub_subject_ids = subject_ids[i:i+chunk_size]
 
-        req = "subjects?hidden=false"
+        req = "subjects?hidden=true"
         if last_sync:
             req += "&updated_after=" + last_sync
         if sub_subject_ids[0]:
