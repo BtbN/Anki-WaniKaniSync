@@ -10,7 +10,7 @@ sys.path.append(str(pathlib.Path(__file__).parent.resolve() / "deps"))
 
 from .wk_api import wk_api_req
 from .importer import ensure_notes, ensure_deck
-from .utils import wknow
+from .utils import wknow, report_progress
 
 
 def get_available_subject_ids(config):

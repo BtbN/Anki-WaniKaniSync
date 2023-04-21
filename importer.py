@@ -4,6 +4,8 @@ from aqt import mw
 import pathlib, shutil
 import requests
 
+from .utils import report_progress
+
 
 class WKImporter(NoteImporter):
     FIELDS = [
@@ -25,11 +27,19 @@ class WKImporter(NoteImporter):
         self.subjects = subjects
         self.sub_subjects = sub_subjects
 
+        self.session = requests.Session()
+
     def fields(self):
         return len(self.FIELDS) + 1 # Final unnamed field is the _tags one
 
     def foreignNotes(self):
-        return [self.makeNote(subj) for subj in self.subjects]
+        res = []
+        i = 0
+        for subj in self.subjects:
+            i += 1
+            report_progress(f"Importing subject {i}/{len(self.subjects)}...", i, len(self.subjects))
+            res.append(self.makeNote(subj))
+        return res
 
     def makeNote(self, subject):
         data = subject["data"]
@@ -57,10 +67,10 @@ class WKImporter(NoteImporter):
             ", ".join(meanings_whl + meanings),
 
             readings.get("primary", "") or "",
-            readings.get("onyomi", "") or "",
-            readings.get("kunyomi", "") or "",
-            readings.get("nanori", "") or "",
-            readings.get("accepted", "") or "",
+            ", ".join(readings.get("onyomi", [])),
+            ", ".join(readings.get("kunyomi", [])),
+            ", ".join(readings.get("nanori", [])),
+            ", ".join(readings.get("accepted", [])),
             data.get("reading_mnemonic", ""),
             data.get("reading_hint", ""),
 
@@ -79,7 +89,7 @@ class WKImporter(NoteImporter):
             "Online; See on Website; <a href=\"" + subject["data"]["document_url"] + "\">" + subject["data"]["document_url"] + "</a>",
             self.get_context_sentences(subject),
 
-            "",
+            self.ensure_audio(subject),
 
             "Lesson_" + str(data["level"]) + " " + subject["object"].capitalize()
         ]
@@ -174,6 +184,30 @@ class WKImporter(NoteImporter):
             res.append(stc["en"] + "|" + stc["ja"])
         return "|".join(res)
 
+    def ensure_audio(self, subject):
+        if "pronunciation_audios" not in subject["data"]:
+            return ""
+
+        dest_dir = pathlib.Path(self.col.media.dir())
+        audios = subject["data"]["pronunciation_audios"]
+        res = ""
+
+        for audio in audios:
+            if audio["content_type"] != "audio/mpeg":
+                continue
+            filename = f'wk3_{audio["metadata"]["source_id"]}.mp3'
+            filepath = dest_dir / filename
+
+            if not filepath.exists():
+                req = self.session.get(audio["url"])
+                req.raise_for_status()
+                filepath.write_bytes(req.content)
+
+            res += f"[sound:{filename}]"
+
+        return res
+
+
 
 def ensure_deck(col, note_name, deck_name):
     datadir = pathlib.Path(__file__).parent.resolve() / "data"
@@ -256,6 +290,8 @@ def ensure_notes(col, subjects, sub_subjects, note_name, deck_name):
     importer = WKImporter(col, model, subjects, sub_subjects)
     importer.initMapping()
     importer.run()
+
+    report_progress("Sorting deck...", 100, 100)
 
     sort_new_cards(col, deck_name)
 
