@@ -31,6 +31,33 @@ def get_available_subject_ids(config):
     return subject_ids
 
 
+def fetch_sub_subjects(subject_ids, existing_subjects):
+    subjects = {}
+
+    # Collect subjects which are in the already fetched list
+    subject_ids = set(subject_ids)
+    for subj in existing_subjects:
+        if subj["id"] in subject_ids:
+            subjects[subj["id"]] = subj
+            subject_ids.remove(subj["id"])
+
+    # Download missing ones from WK
+    chunk_size = 1000
+    subject_ids = list(subject_ids)
+    for i in range(0, len(subject_ids), chunk_size):
+        sub_subject_ids = subject_ids[i:i+chunk_size]
+
+        req = "subjects?ids=" + ",".join(str(id) for id in sub_subject_ids)
+
+        print(req)
+        sub_subjects = wk_api_req(req)
+
+        for subject in sub_subjects["data"]:
+            subjects[subject["id"]] = subject
+
+    return subjects
+
+
 def fetch_subjects(config, subject_ids=None):
     if not subject_ids:
         subject_ids = [None]
@@ -39,7 +66,7 @@ def fetch_subjects(config, subject_ids=None):
     config["_LAST_SUBJECTS_SYNC"] = wknow()
 
     subjects = []
-    chunk_size = 500
+    chunk_size = 1000
     for i in range(0, len(subject_ids), chunk_size):
         sub_subject_ids = subject_ids[i:i+chunk_size]
 
@@ -55,9 +82,21 @@ def fetch_subjects(config, subject_ids=None):
         sub_subjects = wk_api_req(req)
         subjects += sub_subjects["data"]
 
-    #TODO: Resolve Sub-Subjects from notes or WK API, for related kanji/radicals/...
+    sub_subject_ids = set()
+    for subject in subjects:
+        if "amalgamation_subject_ids" in subject["data"]:
+            for id in subject["data"]["amalgamation_subject_ids"]:
+                sub_subject_ids.add(id)
+        if "component_subject_ids" in subject["data"]:
+            for id in subject["data"]["component_subject_ids"]:
+                sub_subject_ids.add(id)
+        if "visually_similar_subject_ids" in subject["data"]:
+            for id in subject["data"]["visually_similar_subject_ids"]:
+                sub_subject_ids.add(id)
 
-    return subjects
+    sub_subjects = fetch_sub_subjects(sub_subject_ids, subjects)
+
+    return subjects, sub_subjects
 
 
 def do_sync_op(col):
@@ -73,7 +112,7 @@ def do_sync_op(col):
     if not config["SYNC_ALL"]:
         subject_ids = get_available_subject_ids(config)
 
-    subjects = fetch_subjects(config, subject_ids)
+    subjects, sub_subjects = fetch_subjects(config, subject_ids)
 
     result = OpChangesWithCount()
     result.count = len(subjects)
@@ -83,7 +122,7 @@ def do_sync_op(col):
         result.changes.deck = True
         result.changes.deck_config = True
 
-    if ensure_notes(col, subjects, config["NOTE_TYPE_NAME"], config["DECK_NAME"]):
+    if ensure_notes(col, subjects, sub_subjects, config["NOTE_TYPE_NAME"], config["DECK_NAME"]):
         result.changes.card = True
         result.changes.note = True
         result.changes.note = True

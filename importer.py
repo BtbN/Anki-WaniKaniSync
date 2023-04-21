@@ -17,12 +17,13 @@ class WKImporter(NoteImporter):
         "Audio"
     ]
 
-    def __init__(self, collection, model, subjects):
+    def __init__(self, collection, model, subjects, sub_subjects):
         NoteImporter.__init__(self, collection, None)
         self.allowHTML = True
         self.importMode = UPDATE_MODE
         self.model = model
         self.subjects = subjects
+        self.sub_subjects = sub_subjects
 
     def fields(self):
         return len(self.FIELDS)
@@ -38,6 +39,10 @@ class WKImporter(NoteImporter):
         meanings_whl = self.get_meanings_whl(subject)
 
         readings = self.get_readings(subject)
+
+        comp_chars, comp_mean, comp_read = self.get_components(subject, "component_subject_ids")
+        simi_chars, simi_mean, simi_read = self.get_components(subject, "visually_similar_subject_ids")
+        amal_chars, amal_mean, amal_read = self.get_components(subject, "amalgamation_subject_ids")
 
         note.fields = [
             subject["id"],
@@ -59,22 +64,22 @@ class WKImporter(NoteImporter):
             data.get("reading_mnemonic", ""),
             data.get("reading_hint", ""),
 
-            "Components_Characters",
-            "Components_Meaning",
-            "Components_Reading",
+            ", ".join(comp_chars),
+            ", ".join(comp_mean),
+            ", ".join(comp_read),
 
-            "Similar_Characters",
-            "Similar_Meaning",
-            "Similar_Reading",
+            ", ".join(simi_chars),
+            ", ".join(simi_mean),
+            ", ".join(simi_read),
 
-            "Found_in_Characters",
-            "Found_in_Meaning",
-            "Found_in_Reading",
+            ", ".join(amal_chars),
+            ", ".join(amal_mean),
+            ", ".join(amal_read),
 
-            "Context_Patterns",
-            "Context_Sentences",
+            "Online; See on Website; <a href=\"" + subject["url"] + "\">" + subject["url"] + "</a>",
+            self.get_context_sentences(subject),
 
-            "Audio"
+            ""
         ]
 
         note.fields = [str(f) for f in note.fields]
@@ -125,6 +130,46 @@ class WKImporter(NoteImporter):
                 res[reading["type"]] = []
             res[reading["type"]].append(reading["reading"])
         return res
+
+    def get_components(self, subject, type):
+        if type not in subject["data"]:
+            return [], [], []
+
+        chars = []
+        mean = []
+        read = []
+
+        sub_ids = subject["data"][type]
+        for sub_id in sub_ids:
+            if sub_id not in self.sub_subjects:
+                continue
+            sub_subj = self.sub_subjects[sub_id]
+
+            chars.append(self.get_character(sub_subj))
+
+            for meaning in sub_subj["data"]["meanings"]:
+                if meaning["primary"]:
+                    mean.append(meaning["meaning"])
+                    break
+
+            if "readings" in sub_subj["data"]:
+                for reading in sub_subj["data"]["readings"]:
+                    if reading["primary"]:
+                        read.append(reading["reading"])
+                        break
+            else:
+                read.append("")
+
+        return chars, mean, read
+
+    def get_context_sentences(self, subject):
+        if "context_sentences" not in subject["data"]:
+            return ""
+
+        res = []
+        for stc in subject["data"]["context_sentences"]:
+            res.append(stc["en"] + "|" + stc["ja"])
+        return "|".join(res)
 
 
 def ensure_deck(col, note_name, deck_name):
@@ -180,7 +225,7 @@ def ensure_deck(col, note_name, deck_name):
     return ret
 
 
-def ensure_notes(col, subjects, note_name, deck_name):
+def ensure_notes(col, subjects, sub_subjects, note_name, deck_name):
     model = col.models.by_name(note_name)
     if not model:
         raise Exception("Can't ensure non-existant model")
@@ -190,7 +235,7 @@ def ensure_notes(col, subjects, note_name, deck_name):
 
     col.set_aux_notetype_config(model["id"], "lastDeck", deck_id)
 
-    importer = WKImporter(col, model, subjects)
+    importer = WKImporter(col, model, subjects, sub_subjects)
     importer.initMapping()
     importer.run()
 
