@@ -28,7 +28,7 @@ def get_available_subject_ids(config):
     return subject_ids
 
 
-def fetch_subjects(subject_ids=None):
+def fetch_subjects(config, subject_ids=None):
     if not subject_ids:
         subject_ids = [None]
 
@@ -68,7 +68,7 @@ def do_sync():
     if not config["SYNC_ALL"]:
         subject_ids = get_available_subject_ids(config)
 
-    subjects = fetch_subjects(subject_ids)
+    subjects = fetch_subjects(config, subject_ids)
 
     ensure_deck(config["NOTE_TYPE_NAME"], config["DECK_NAME"])
     ensure_cards(subjects)

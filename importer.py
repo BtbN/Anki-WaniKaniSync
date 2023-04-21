@@ -1,7 +1,7 @@
 from anki.importing.noteimp  import NoteImporter, ForeignNote
 from aqt import mw
 
-import pathlib
+import pathlib, shutil
 
 
 class WKImporter(NoteImporter):
@@ -21,6 +21,15 @@ class WKImporter(NoteImporter):
 
 
 def ensure_deck(note_name, deck_name):
+    datadir = pathlib.Path(__file__).parent.resolve() / "data"
+
+    source_dir = datadir / "files"
+    dest_dir = pathlib.Path(mw.col.media.dir())
+    for source_file in source_dir.iterdir():
+        dest_file = dest_dir / source_file.name
+        if not dest_file.exists():
+            shutil.copy(source_file, dest_file)
+
     model = mw.col.models.by_name(note_name)
     if not model:
         model = mw.col.models.new(note_name)
@@ -29,8 +38,6 @@ def ensure_deck(note_name, deck_name):
             mw.col.models.add_field(model, mw.col.models.new_field(field))
 
         mw.col.models.set_sort_index(model, 2)
-
-        datadir = pathlib.Path(__file__).parent.resolve() / "data"
 
         meaning_tpl = mw.col.models.new_template("Meaning")
         meaning_tpl["qfmt"] = (datadir / "meaning_front.html").read_text(encoding="utf-8")
