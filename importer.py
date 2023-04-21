@@ -227,6 +227,21 @@ def ensure_deck(col, note_name, deck_name):
     return ret
 
 
+def sort_new_cards(col, deck_name):
+    card_ids = col.find_cards(f'"deck:{deck_name}" is:new')
+    sort_keys = {cid: int(col.get_card(cid).note()["sort_id"]) for cid in card_ids}
+
+    card_ids = sorted(card_ids, key=lambda cid: sort_keys[cid])
+
+    col.sched.reposition_new_cards(
+        card_ids=card_ids,
+        starting_from=0,
+        step_size=1,
+        randomize=False,
+        shift_existing=False
+    )
+
+
 def ensure_notes(col, subjects, sub_subjects, note_name, deck_name):
     model = col.models.by_name(note_name)
     if not model:
@@ -240,5 +255,7 @@ def ensure_notes(col, subjects, sub_subjects, note_name, deck_name):
     importer = WKImporter(col, model, subjects, sub_subjects)
     importer.initMapping()
     importer.run()
+
+    sort_new_cards(col, deck_name)
 
     return len(subjects) > 0
