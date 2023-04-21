@@ -127,7 +127,7 @@ class WKImporter(NoteImporter):
             if reading["primary"]:
                 res["primary"] = reading["reading"]
             if reading["accepted_answer"]:
-                res["primary"].accepted.append(reading["reading"])
+                res["accepted"].append(reading["reading"])
             if reading["type"] not in res:
                 res[reading["type"]] = []
             res[reading["type"]].append(reading["reading"])
