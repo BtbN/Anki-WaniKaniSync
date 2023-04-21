@@ -1,5 +1,6 @@
 from aqt import mw, gui_hooks
 from aqt.utils import showInfo, qconnect
+from aqt.operations import CollectionOp, QueryOp
 from aqt.qt import *
 
 import pathlib
@@ -7,7 +8,7 @@ import sys
 sys.path.append(str(pathlib.Path(__file__).parent.resolve() / "deps"))
 
 from .wk_api import wk_api_req
-from .importer import ensure_cards, ensure_deck
+from .importer import ensure_notes, ensure_deck
 from .utils import wknow
 
 
@@ -19,6 +20,7 @@ def get_available_subject_ids(config):
         req += "&updated_after=" + last_sync
 
     config["_LAST_ASSIGNMENTS_SYNC"] = wknow()
+    print(req)
     assignments = wk_api_req(req)
 
     subject_ids = [data["data"]["subject_id"] for data in assignments["data"]]
@@ -40,12 +42,15 @@ def fetch_subjects(config, subject_ids=None):
     for i in range(0, len(subject_ids), chunk_size):
         sub_subject_ids = subject_ids[i:i+chunk_size]
 
-        req = "subjects?hidden=true"
+        req = "subjects"
+        if sub_subject_ids[0]:
+            req += "?ids=" + ",".join(str(id) for id in sub_subject_ids)
+        else:
+            req += "?hidden=false"
         if last_sync:
             req += "&updated_after=" + last_sync
-        if sub_subject_ids[0]:
-            req += "&ids=" + ",".join(str(id) for id in sub_subject_ids)
 
+        print(req)
         sub_subjects = wk_api_req(req)
         subjects += sub_subjects["data"]
 
@@ -54,7 +59,7 @@ def fetch_subjects(config, subject_ids=None):
     return subjects
 
 
-def do_sync():
+def do_sync_op(col):
     config = mw.addonManager.getConfig(__name__)
 
     if not config["WK_API_KEY"]:
@@ -70,10 +75,14 @@ def do_sync():
 
     subjects = fetch_subjects(config, subject_ids)
 
-    ensure_deck(config["NOTE_TYPE_NAME"], config["DECK_NAME"])
-    ensure_cards(subjects)
+    ensure_deck(col, config["NOTE_TYPE_NAME"], config["DECK_NAME"])
+    ensure_notes(col, subjects, config["NOTE_TYPE_NAME"], config["DECK_NAME"])
 
     mw.addonManager.writeConfig(__name__, config)
+
+
+def do_sync():
+    CollectionOp(mw, do_sync_op).run_in_background()
 
 
 def analyze_answer(card, ease):
