@@ -2,6 +2,7 @@ from aqt import mw, gui_hooks
 from aqt.utils import showInfo, qconnect
 from aqt.operations import CollectionOp, QueryOp
 from aqt.qt import *
+from anki.collection import OpChanges, OpChangesWithCount
 
 import pathlib
 import sys
@@ -54,7 +55,7 @@ def fetch_subjects(config, subject_ids=None):
         sub_subjects = wk_api_req(req)
         subjects += sub_subjects["data"]
 
-    #TODO: Resolve Sub-Subjects from notes or WK API, such related kanji/radicals/...
+    #TODO: Resolve Sub-Subjects from notes or WK API, for related kanji/radicals/...
 
     return subjects
 
@@ -74,10 +75,23 @@ def do_sync_op(col):
 
     subjects = fetch_subjects(config, subject_ids)
 
-    ensure_deck(col, config["NOTE_TYPE_NAME"], config["DECK_NAME"])
-    ensure_notes(col, subjects, config["NOTE_TYPE_NAME"], config["DECK_NAME"])
+    result = OpChangesWithCount()
+    result.count = len(subjects)
+
+    if ensure_deck(col, config["NOTE_TYPE_NAME"], config["DECK_NAME"]):
+        result.changes.notetype = True
+        result.changes.deck = True
+        result.changes.deck_config = True
+
+    if ensure_notes(col, subjects, config["NOTE_TYPE_NAME"], config["DECK_NAME"]):
+        result.changes.card = True
+        result.changes.note = True
+        result.changes.note = True
+        result.changes.study_queues = True #TODO: maybe move to own function which updates next review time
 
     mw.addonManager.writeConfig(__name__, config)
+
+    return result
 
 
 def do_sync():

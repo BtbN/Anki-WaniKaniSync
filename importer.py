@@ -24,11 +24,9 @@ class WKImporter(NoteImporter):
         self.subjects = subjects
 
     def fields(self):
-        print("Got fields")
         return len(self.FIELDS)
 
     def foreignNotes(self):
-        print("Getting notes for {} subjects".format(len(self.subjects)))
         return [self.makeNote(subj) for subj in self.subjects]
 
     def makeNote(self, subject):
@@ -44,12 +42,12 @@ class WKImporter(NoteImporter):
             self.get_character(subject),
             subject["object"].capitalize(),
             ", ".join(data["parts_of_speech"]) if "parts_of_speech" in data else "",
-            
+
             ", ".join(meanings),
             data["meaning_mnemonic"],
             data["meaning_hint"] if "meaning_hint" in data else "",
             ", ".join(meanings_whl + meanings),
-            
+
             "",
             "",
             "",
@@ -57,28 +55,26 @@ class WKImporter(NoteImporter):
             "",
             "",
             "",
-            
+
             "",
             "",
             "",
-            
+
             "",
             "",
             "",
-            
+
             "",
             "",
             "",
-            
+
             "",
             "",
-            
+
             ""
         ]
 
         note.fields = [str(f) for f in note.fields]
-
-        print(repr(note))
 
         return note
 
@@ -116,6 +112,8 @@ def ensure_deck(col, note_name, deck_name):
         if not dest_file.exists():
             shutil.copy(source_file, dest_file)
 
+    ret = False
+
     model = col.models.by_name(note_name)
     if not model:
         model = col.models.new(note_name)
@@ -140,6 +138,8 @@ def ensure_deck(col, note_name, deck_name):
         col.models.add_dict(model)
         model = col.models.by_name(note_name)
 
+        ret = True
+
     deck_id = col.decks.id(deck_name, create=False)
     if not deck_id:
         deck_id = col.decks.id(deck_name, create=True)
@@ -149,6 +149,10 @@ def ensure_deck(col, note_name, deck_name):
 
         model["did"] = deck_id
         col.models.update_dict(model)
+
+        ret = True
+
+    return ret
 
 
 def ensure_notes(col, subjects, note_name, deck_name):
@@ -164,3 +168,5 @@ def ensure_notes(col, subjects, note_name, deck_name):
     importer = WKImporter(col, model, subjects)
     importer.initMapping()
     importer.run()
+
+    return len(subjects) > 0
