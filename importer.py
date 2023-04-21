@@ -76,7 +76,7 @@ class WKImporter(NoteImporter):
             ", ".join(amal_mean),
             ", ".join(amal_read),
 
-            "Online; See on Website; <a href=\"" + subject["url"] + "\">" + subject["url"] + "</a>",
+            "Online; See on Website; <a href=\"" + subject["data"]["document_url"] + "\">" + subject["data"]["document_url"] + "</a>",
             self.get_context_sentences(subject),
 
             ""
