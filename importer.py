@@ -26,7 +26,7 @@ class WKImporter(NoteImporter):
         self.sub_subjects = sub_subjects
 
     def fields(self):
-        return len(self.FIELDS)
+        return len(self.FIELDS) + 1 # Final unnamed field is the _tags one
 
     def foreignNotes(self):
         return [self.makeNote(subj) for subj in self.subjects]
@@ -79,7 +79,9 @@ class WKImporter(NoteImporter):
             "Online; See on Website; <a href=\"" + subject["data"]["document_url"] + "\">" + subject["data"]["document_url"] + "</a>",
             self.get_context_sentences(subject),
 
-            ""
+            "",
+
+            "Lesson_" + str(data["level"]) + " " + subject["object"].capitalize()
         ]
 
         note.fields = [str(f) for f in note.fields]
