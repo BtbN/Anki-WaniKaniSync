@@ -58,7 +58,7 @@ def fetch_sub_subjects(subject_ids, existing_subjects):
     return subjects
 
 
-def fetch_subjects(config, subject_ids=None):
+def fetch_subjects(config, subject_ids=None, max_lvl=3):
     if not subject_ids:
         subject_ids = [None]
 
@@ -70,11 +70,11 @@ def fetch_subjects(config, subject_ids=None):
     for i in range(0, len(subject_ids), chunk_size):
         sub_subject_ids = subject_ids[i:i+chunk_size]
 
-        req = "subjects"
+        req = "subjects?levels=" + ",".join([str(i) for i in range(max_lvl + 1)])
         if sub_subject_ids[0]:
-            req += "?ids=" + ",".join(str(id) for id in sub_subject_ids)
+            req += "&ids=" + ",".join(str(id) for id in sub_subject_ids)
         else:
-            req += "?hidden=false"
+            req += "&hidden=false"
         if last_sync:
             req += "&updated_after=" + last_sync
 
@@ -83,7 +83,13 @@ def fetch_subjects(config, subject_ids=None):
         subjects += sub_subjects["data"]
 
     sub_subject_ids = set()
+    final_subjects = []
     for subject in subjects:
+        if subject["data"]["level"] <= max_lvl:
+            final_subjects.append(subject)
+        else:
+            continue
+
         if "amalgamation_subject_ids" in subject["data"]:
             for id in subject["data"]["amalgamation_subject_ids"]:
                 sub_subject_ids.add(id)
@@ -96,7 +102,7 @@ def fetch_subjects(config, subject_ids=None):
 
     sub_subjects = fetch_sub_subjects(sub_subject_ids, subjects)
 
-    return subjects, sub_subjects
+    return final_subjects, sub_subjects
 
 
 def do_sync_op(col):
@@ -112,7 +118,7 @@ def do_sync_op(col):
     if not config["SYNC_ALL"]:
         subject_ids = get_available_subject_ids(config)
 
-    subjects, sub_subjects = fetch_subjects(config, subject_ids)
+    subjects, sub_subjects = fetch_subjects(config, subject_ids, granted_lvl)
 
     result = OpChangesWithCount()
     result.count = len(subjects)
