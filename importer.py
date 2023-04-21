@@ -36,6 +36,8 @@ class WKImporter(NoteImporter):
         meanings = self.get_meanings(subject)
         meanings_whl = self.get_meanings_whl(subject)
 
+        readings = self.get_readings(subject)
+
         note.fields = [
             subject["id"],
             data["level"]*10000 + data["lesson_position"],
@@ -48,30 +50,30 @@ class WKImporter(NoteImporter):
             data["meaning_hint"] if "meaning_hint" in data else "",
             ", ".join(meanings_whl + meanings),
 
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
+            readings.get("primary", ""),
+            readings.get("onyomi", ""),
+            readings.get("kunyomi", ""),
+            readings.get("nanori", ""),
+            readings.get("accepted", ""),
+            data.get("reading_mnemonic", ""),
+            data.get("reading_hint", ""),
 
-            "",
-            "",
-            "",
+            "Components_Characters",
+            "Components_Meaning",
+            "Components_Reading",
 
-            "",
-            "",
-            "",
+            "Similar_Characters",
+            "Similar_Meaning",
+            "Similar_Reading",
 
-            "",
-            "",
-            "",
+            "Found_in_Characters",
+            "Found_in_Meaning",
+            "Found_in_Reading",
 
-            "",
-            "",
+            "Context_Patterns",
+            "Context_Sentences",
 
-            ""
+            "Audio"
         ]
 
         note.fields = [str(f) for f in note.fields]
@@ -99,6 +101,22 @@ class WKImporter(NoteImporter):
         for item in aux:
             if item["type"] == "whitelist":
                 res.append(item["meaning"])
+        return res
+
+    def get_readings(self, subject):
+        readings = subject["data"]["readings"] if "readings" in subject["data"] else []
+        res = {
+            "primary": "",
+            "accepted": []
+        }
+        for reading in readings:
+            if reading["primary"]:
+                res["primary"] = reading["reading"]
+            if reading["accepted_answer"]:
+                res["primary"].accepted.append(reading["reading"])
+            if reading["type"] not in res:
+                res[reading["type"]] = []
+            res[reading["type"]].append(reading["reading"])
         return res
 
 
