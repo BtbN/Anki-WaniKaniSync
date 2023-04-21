@@ -63,8 +63,7 @@ def do_sync_op(col):
     config = mw.addonManager.getConfig(__name__)
 
     if not config["WK_API_KEY"]:
-        showInfo("Configure your WaniKani API key first.")
-        return
+        raise Exception("Configure your WaniKani API key first.")
 
     user_data = wk_api_req("user")
     granted_lvl = user_data["data"]["subscription"]["max_level_granted"]
