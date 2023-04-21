@@ -128,9 +128,10 @@ class WKImporter(NoteImporter):
                 res["primary"] = reading["reading"]
             if reading["accepted_answer"]:
                 res["accepted"].append(reading["reading"])
-            if reading["type"] not in res:
-                res[reading["type"]] = []
-            res[reading["type"]].append(reading["reading"])
+            if "type" in reading:
+                if reading["type"] not in res:
+                    res[reading["type"]] = []
+                res[reading["type"]].append(reading["reading"])
         return res
 
     def get_components(self, subject, type):
