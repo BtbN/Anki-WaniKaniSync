@@ -2,6 +2,7 @@ from anki.importing.noteimp import NoteImporter, ForeignNote, UPDATE_MODE
 from aqt import mw
 
 import pathlib, shutil
+import requests
 
 
 class WKImporter(NoteImporter):
@@ -50,11 +51,11 @@ class WKImporter(NoteImporter):
             data["meaning_hint"] if "meaning_hint" in data else "",
             ", ".join(meanings_whl + meanings),
 
-            readings.get("primary", ""),
-            readings.get("onyomi", ""),
-            readings.get("kunyomi", ""),
-            readings.get("nanori", ""),
-            readings.get("accepted", ""),
+            readings.get("primary", "") or "",
+            readings.get("onyomi", "") or "",
+            readings.get("kunyomi", "") or "",
+            readings.get("nanori", "") or "",
+            readings.get("accepted", "") or "",
             data.get("reading_mnemonic", ""),
             data.get("reading_hint", ""),
 
@@ -81,8 +82,14 @@ class WKImporter(NoteImporter):
         return note
 
     def get_character(self, subject):
-        # TODO: Take care of radicals without characters
-        return subject["data"]["characters"]
+        res = subject["data"]["characters"]
+        if res:
+            return res
+
+        if subject["object"] == "radical":
+            return f'<i class="radical-{subject["data"]["slug"]}"></i>'
+
+        return "Not found"
 
     def get_meanings(self, subject):
         meanings = subject["data"]["meanings"]
