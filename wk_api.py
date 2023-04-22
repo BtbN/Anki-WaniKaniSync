@@ -10,7 +10,7 @@ WK_REV="20170710"
 limiter = Limiter(RequestRate(60, Duration.MINUTE))
 
 
-def wk_api_req(ep, full=True):
+def wk_api_req(ep, full=True, data=None, put=False):
     config = mw.addonManager.getConfig(__name__)
     api_key = config["WK_API_KEY"]
     if not api_key:
@@ -22,7 +22,13 @@ def wk_api_req(ep, full=True):
     }
 
     with limiter.ratelimit(api_key, delay=True):
-        res = requests.get(f"{WK_API_BASE}/{ep}", headers=headers)
+        if data:
+            if put:
+                res = requests.put(f"{WK_API_BASE}/{ep}", headers=headers, json=data)
+            else:
+                res = requests.post(f"{WK_API_BASE}/{ep}", headers=headers, json=data)
+        else:
+            res = requests.get(f"{WK_API_BASE}/{ep}", headers=headers)
     res.raise_for_status()
     data = res.json()
 

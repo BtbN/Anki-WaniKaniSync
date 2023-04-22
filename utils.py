@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from aqt import mw
+from aqt.utils import tooltip
 
 
 def wknow():
@@ -13,4 +14,9 @@ def report_progress(txt, val, max):
             value=val,
             max=max
         )
+     )
+
+def show_tooltip(txt, period=3000):
+     mw.taskman.run_on_main(
+        lambda: tooltip(txt, period=period)
      )
