@@ -147,7 +147,7 @@ def analyze_answer(card, ease):
     pass
 
 
-menu = QMenu("WKSync", mw)
+menu = QMenu("WaniKani", mw)
 mw.form.menuTools.addMenu(menu)
 
 sync_action = QAction("Sync", mw)
