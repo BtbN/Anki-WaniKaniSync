@@ -22,7 +22,7 @@ def wk_api_req(ep, full=True, data=None, put=False):
     }
 
     with limiter.ratelimit(api_key, delay=True):
-        if data:
+        if data is not None:
             if put:
                 res = requests.put(f"{WK_API_BASE}/{ep}", headers=headers, json=data)
             else:

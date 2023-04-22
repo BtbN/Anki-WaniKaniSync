@@ -7,6 +7,10 @@ def wknow():
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
+def wkparsetime(txt):
+    return datetime.fromisoformat(txt.replace("Z", "+00:00"))
+
+
 def report_progress(txt, val, max):
      mw.taskman.run_on_main(
         lambda: mw.progress.update(
