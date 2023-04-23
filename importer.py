@@ -282,6 +282,20 @@ def sort_new_cards(col, deck_name):
     )
 
 
+def suspend_hidden_notes(col, subjects, note_name):
+    for subject in subjects:
+        if not subject["data"]["hidden_at"]:
+            continue
+
+        subject_id = subject["id"]
+        note_ids = col.find_notes(f'-is:suspended "note:{note_name}" card\\_id:{subject_id}')
+        if len(note_ids) > 1:
+            print("Found more than one note for a subject id!")
+
+        if len(note_ids):
+            col.sched.suspend_notes(note_ids)
+
+
 def ensure_notes(col, subjects, sub_subjects, note_name, deck_name):
     model = col.models.by_name(note_name)
     if not model:
@@ -297,7 +311,9 @@ def ensure_notes(col, subjects, sub_subjects, note_name, deck_name):
     importer.run()
 
     report_progress("Sorting deck...", 100, 100)
-
     sort_new_cards(col, deck_name)
+
+    report_progress("Suspending hidden subjects...", 100, 100)
+    suspend_hidden_notes(col, subjects, note_name)
 
     return len(subjects) > 0
