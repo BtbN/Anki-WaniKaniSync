@@ -235,6 +235,7 @@ def ensure_deck(col, note_name, deck_name):
 
         col.models.set_sort_index(model, 2)
 
+        # Meaning has to be first, for sorting!
         meaning_tpl = col.models.new_template("Meaning")
         meaning_tpl["qfmt"] = (datadir / "meaning_front.html").read_text(encoding="utf-8")
         meaning_tpl["afmt"] = (datadir / "meaning_back.html").read_text(encoding="utf-8")
@@ -269,7 +270,13 @@ def ensure_deck(col, note_name, deck_name):
 
 def sort_new_cards(col, deck_name):
     card_ids = col.find_cards(f'"deck:{deck_name}" is:new')
-    sort_keys = {cid: int(col.get_card(cid).note()["sort_id"]) for cid in card_ids}
+
+    sort_keys = {}
+    for cid in card_ids:
+        card = col.get_card(cid)
+        note = card.note()
+        # The Meaning template has the lowest template index(ord), so add it in to have Meaning-Cards first.
+        sort_keys[cid] = int(note["sort_id"]) * 100 + card.ord
 
     card_ids = sorted(card_ids, key=lambda cid: sort_keys[cid])
 
