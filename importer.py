@@ -252,6 +252,10 @@ def ensure_deck(col, note_name, deck_name):
         model = col.models.by_name(note_name)
 
         ret = True
+    else:
+        field_names = col.models.field_names(model)
+        if field_names != WKImporter.FIELDS:
+            raise Exception("Existing WaniKani deck does not match expected field layout!")
 
     deck_id = col.decks.id(deck_name, create=False)
     if not deck_id:
