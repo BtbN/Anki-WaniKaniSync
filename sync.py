@@ -47,13 +47,11 @@ def fetch_subjects(config, subject_ids=None, existing_subject_ids=None, max_lvl=
             continue
 
         for i in range(0, len(current_ids), chunk_size):
-            sub_subject_ids = current_ids[i:i+chunk_size]
+            chunk_ids = current_ids[i:i+chunk_size]
 
             req = "subjects?levels=" + ",".join([str(i) for i in range(max_lvl + 1)])
-            if sub_subject_ids[0]:
-                req += "&ids=" + ",".join(str(id) for id in sub_subject_ids)
-            else:
-                req += "&hidden=false"
+            if chunk_ids[0]:
+                req += "&ids=" + ",".join(str(id) for id in chunk_ids)
 
             # Include the update-limit if:
             #  - we have a last sync timestamps AND

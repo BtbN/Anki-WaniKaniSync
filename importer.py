@@ -38,12 +38,15 @@ class WKImporter(NoteImporter):
         for subj in self.subjects:
             i += 1
             report_progress(f"Importing subject {i}/{len(self.subjects)}...", i, len(self.subjects))
-            res.append(self.makeNote(subj))
+            note = self.makeNote(subj)
+            if note:
+                res.append(note)
         return res
 
     def makeNote(self, subject):
         data = subject["data"]
-        note = ForeignNote()
+        if data["hidden_at"]:
+            return None
 
         meanings = self.get_meanings(subject)
         meanings_whl = self.get_meanings_whl(subject)
@@ -53,6 +56,8 @@ class WKImporter(NoteImporter):
         comp_chars, comp_mean, comp_read = self.get_components(subject, "component_subject_ids")
         simi_chars, simi_mean, simi_read = self.get_components(subject, "visually_similar_subject_ids")
         amal_chars, amal_mean, amal_read = self.get_components(subject, "amalgamation_subject_ids")
+
+        note = ForeignNote()
 
         note.fields = [
             subject["id"],
