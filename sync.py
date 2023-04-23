@@ -3,7 +3,7 @@ from aqt.operations import CollectionOp
 from anki.collection import OpChanges, OpChangesWithCount
 
 from .wk_api import wk_api_req
-from .importer import ensure_notes, ensure_deck
+from .importer import ensure_notes, ensure_deck, convert_wk3_notes
 from .utils import wknow, report_progress
 
 
@@ -156,9 +156,39 @@ def do_convert_wk3_op(col):
     if not config["WK_API_KEY"]:
         raise Exception("Configure your WaniKani API key first.")
 
+    user_data = wk_api_req("user")
+    granted_lvl = user_data["data"]["subscription"]["max_level_granted"]
+
+    result = OpChangesWithCount()
+
+    if ensure_deck(col, config["NOTE_TYPE_NAME"], config["DECK_NAME"]):
+        result.changes.notetype = True
+        result.changes.deck = True
+        result.changes.deck_config = True
+
+    config["_LAST_SUBJECTS_SYNC"] = ""
+    subjects = fetch_subjects(config, None, None, granted_lvl)
+    sub_subjects = fetch_sub_subjects(config, subjects)
+
+    result.count = len(subjects)
+
+    convert_wk3_notes(col, subjects, config["NOTE_TYPE_NAME"])
+
+    if ensure_notes(col, subjects, sub_subjects, config["NOTE_TYPE_NAME"], config["DECK_NAME"]):
+        result.changes.card = True
+        result.changes.note = True
+        result.changes.note = True
+
+    config["SYNC_ALL"] = True
+    config["SYNC_DUE_TIME"] = False
+    mw.addonManager.writeConfig(__name__, config)
+
+    return result
+
 
 def do_sync():
     CollectionOp(mw, do_sync_op).run_in_background()
+
 
 def do_convert_wk3():
     CollectionOp(mw, do_convert_wk3_op).run_in_background()

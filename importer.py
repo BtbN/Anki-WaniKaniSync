@@ -328,3 +328,71 @@ def ensure_notes(col, subjects, sub_subjects, note_name, deck_name):
     suspend_hidden_notes(col, subjects, note_name)
 
     return len(subjects) > 0
+
+
+def convert_wk3_notes(col, subjects, note_name):
+    model = col.models.by_name(note_name)
+    if not model:
+        raise Exception("Can't convert non-existant model")
+
+    subj_by_char = {}
+    subj_by_slug = {}
+    for subj in subjects:
+        char = subj["data"]["characters"]
+        if char:
+            if char not in subj_by_char:
+                subj_by_char[char] = {}
+            subj_by_char[char][subj["object"]] = subj
+
+        # Only radicals potentially have no characters.
+        if subj["object"] != "radical":
+            continue
+
+        slug = subj["data"]["slug"]
+        if slug not in subj_by_slug:
+            subj_by_slug[slug] = {}
+        subj_by_slug[slug][subj["object"]] = subj
+
+    note_ids = col.find_notes(f'"note:{note_name}"')
+    if not note_ids:
+        raise Exception("No notes found, can't convert.")
+
+    changed_notes = []
+    i = 0
+    for note_id in note_ids:
+        note = col.get_note(note_id)
+        i += 1
+
+        report_progress(f"Converting note {i}/{len(note_ids)}...", i, len(note_ids))
+
+        note_char = note["Characters"].strip()
+        if note_char in subj_by_char:
+            ct = note["Card_Type"].lower()
+            tps = subj_by_char[note_char]
+
+            if ct not in tps:
+                raise Exception("Matching character has no matching card type!")
+
+            note["card_id"] = str(tps[ct]["id"])
+            changed_notes.append(note)
+            continue
+
+        found = False
+        for slug in subj_by_slug.keys():
+            if slug in note_char:
+                ct = note["Card_Type"].lower()
+                tps = subj_by_slug[slug]
+
+                if ct not in tps:
+                    raise Exception("Matching character has no matching card type!")
+
+                note["card_id"] = str(tps[ct]["id"])
+                changed_notes.append(note)
+                found = True
+                break
+        if found:
+            continue
+
+        raise Exception("Could not match note to subject: " + note["Characters"] + "/" + note["card_id"])
+
+    col.update_notes(changed_notes)
