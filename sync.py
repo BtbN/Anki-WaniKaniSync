@@ -150,5 +150,15 @@ def do_sync_op(col):
     return result
 
 
+def do_convert_wk3_op(col):
+    config = mw.addonManager.getConfig(__name__)
+
+    if not config["WK_API_KEY"]:
+        raise Exception("Configure your WaniKani API key first.")
+
+
 def do_sync():
     CollectionOp(mw, do_sync_op).run_in_background()
+
+def do_convert_wk3():
+    CollectionOp(mw, do_convert_wk3_op).run_in_background()

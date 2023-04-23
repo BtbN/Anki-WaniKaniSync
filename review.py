@@ -99,8 +99,12 @@ def autoreview_op(col):
     if not config["WK_API_KEY"]:
         return
 
-    due_limit = 7
+    user_data = wk_api_req("user")
+    granted_lvl = user_data["data"]["subscription"]["max_level_granted"]
+    user_lvl = user_data["data"]["level"]
 
+    due_limit = 7
+    level_cutoff = 5
     note_ids = col.find_notes(f'prop:due>{due_limit} "deck:{config["DECK_NAME"]}" "note:{config["NOTE_TYPE_NAME"]}"')
     i = 1
     succ = 0
@@ -114,7 +118,16 @@ def autoreview_op(col):
         report_progress(f"Processing reviews {i}/{len(note_ids)}...<br/>{succ} Reviews Submitted", i, len(note_ids))
         i += 1
 
-        subj_id = col.get_note(note_id)["card_id"]
+        note = col.get_note(note_id)
+        subj_id = int(note["card_id"])
+        sort_id = int(note["sort_id"])
+
+        note_lvl = sort_id // 10000
+        if note_lvl > user_lvl or note_lvl > granted_lvl:
+            continue
+        if note_lvl < user_lvl - level_cutoff:
+            continue
+
         try:
             review_subject(subj_id)
             succ += 1
