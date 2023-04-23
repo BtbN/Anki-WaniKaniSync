@@ -103,6 +103,7 @@ def autoreview_op(col):
 
     note_ids = col.find_notes(f'prop:due>{due_limit} "deck:{config["DECK_NAME"]}" "note:{config["NOTE_TYPE_NAME"]}"')
     i = 1
+    succ = 0
     for note_id in note_ids:
         all_card_ids = col.find_cards(f'nid:{note_id} "deck:{config["DECK_NAME"]}"')
         due_card_ids = col.find_cards(f'prop:due>{due_limit} nid:{note_id} "deck:{config["DECK_NAME"]}"')
@@ -110,12 +111,13 @@ def autoreview_op(col):
             # Not all cards for that note are at the due limit yet, don't submit
             continue
 
-        report_progress(f"Processing reviews {i}/{len(note_ids)}...")
+        report_progress(f"Processing reviews {i}/{len(note_ids)}...<br/>{succ} Reviews Submitted", i, len(note_ids))
         i += 1
 
         subj_id = col.get_note(note_id)["card_id"]
         try:
             review_subject(subj_id)
+            succ += 1
         except ReviewException as e:
             print(str(e))
 

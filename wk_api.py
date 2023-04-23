@@ -7,7 +7,7 @@ import requests
 WK_API_BASE="https://api.wanikani.com/v2"
 WK_REV="20170710"
 
-limiter = Limiter(RequestRate(60, Duration.MINUTE))
+limiter = Limiter(RequestRate(50, Duration.MINUTE))
 
 
 def wk_api_req(ep, full=True, data=None, put=False):
