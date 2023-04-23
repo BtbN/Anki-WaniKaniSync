@@ -22,7 +22,7 @@ qconnect(review_action.triggered, do_autoreview)
 menu.addAction(review_action)
 
 convert_action = QAction("Convert WK3", mw)
-qconnect(review_action.convert_action, do_convert_wk3)
+qconnect(convert_action.triggered, do_convert_wk3)
 menu.addAction(convert_action)
 
 
