@@ -264,4 +264,4 @@ def auto_sync():
     config = mw.addonManager.getConfig(__name__)
     if not config["WK_API_KEY"] or not config["AUTO_REPORT"]:
         return
-    do_autoreview()
+    do_sync()
