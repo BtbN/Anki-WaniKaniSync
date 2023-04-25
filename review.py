@@ -1,5 +1,5 @@
 from aqt import mw
-from aqt.operations import CollectionOp
+from aqt.operations import CollectionOp, QueryOp
 from anki.collection import OpChanges
 
 import itertools
@@ -113,7 +113,11 @@ def analyze_answer(reviewer, card, ease):
         if other_card.reps < card.reps:
             return
 
-    CollectionOp(mw, lambda col: submit_assignment_op(config, col, subject_id)).run_in_background()
+    QueryOp(
+        parent=mw,
+        op=lambda col: submit_assignment_op(config, col, subject_id),
+        success=lambda cnt: None
+    ).run_in_background()
 
 
 def autoreview_op(col):
