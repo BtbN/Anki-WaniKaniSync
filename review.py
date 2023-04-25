@@ -1,6 +1,7 @@
 from aqt import mw
 from aqt.operations import QueryOp
 
+import itertools
 from datetime import datetime, timezone
 from requests.exceptions import HTTPError
 
@@ -11,10 +12,17 @@ from .utils import wkparsetime, show_tooltip, report_progress
 class ReviewException(Exception):
     pass
 
-def review_subject(subject_id):
+def review_subject(subject_id, assignment=None):
     try:
-        res = wk_api_req(f"assignments?subject_ids={subject_id}&unlocked=true&hidden=false")
-        if len(res["data"]) == 1:
+        if assignment:
+            res = { "data": [assignment] }
+            subject_id = assignment["data"]["subject_id"]
+        else:
+            res = wk_api_req(f"assignments?subject_ids={subject_id}&unlocked=true&hidden=false")
+
+        if len(res["data"]) == 0:
+            raise ReviewException(f"Assignment for subject {subject_id} not found.")
+        elif len(res["data"]) == 1:
             if res["data"][0]["data"]["burned_at"]:
                 return
 
@@ -103,33 +111,34 @@ def autoreview_op(col):
     granted_lvl = user_data["data"]["subscription"]["max_level_granted"]
     user_lvl = user_data["data"]["level"]
 
+    available_subjects = {}
+    assignments_lessons = wk_api_req("assignments?immediately_available_for_lessons=true")
+    assignments_reviews = wk_api_req("assignments?immediately_available_for_review=true")
+    for assignment in itertools.chain(assignments_lessons["data"], assignments_reviews["data"]):
+        available_subjects[assignment["data"]["subject_id"]] = assignment
+
     due_limit = 7
-    level_cutoff = 5
     note_ids = col.find_notes(f'prop:due>{due_limit} "deck:{config["DECK_NAME"]}" "note:{config["NOTE_TYPE_NAME"]}"')
-    i = 1
+    i = 0
     succ = 0
     for note_id in note_ids:
+        i += 1
+        report_progress(f"Processing potential reviews {i}/{len(note_ids)}...<br/>{succ} Reviews Submitted", i, len(note_ids))
+
         all_card_ids = col.find_cards(f'nid:{note_id} "deck:{config["DECK_NAME"]}"')
         due_card_ids = col.find_cards(f'prop:due>{due_limit} nid:{note_id} "deck:{config["DECK_NAME"]}"')
         if len(due_card_ids) != len(all_card_ids):
             # Not all cards for that note are at the due limit yet, don't submit
             continue
 
-        report_progress(f"Processing reviews {i}/{len(note_ids)}...<br/>{succ} Reviews Submitted", i, len(note_ids))
-        i += 1
-
         note = col.get_note(note_id)
         subj_id = int(note["card_id"])
-        sort_id = int(note["sort_id"])
 
-        note_lvl = sort_id // 10000
-        if note_lvl > user_lvl or note_lvl > granted_lvl:
-            continue
-        if note_lvl < user_lvl - level_cutoff:
+        if subj_id not in available_subjects:
             continue
 
         try:
-            review_subject(subj_id)
+            review_subject(subj_id, available_subjects["subj_id"])
             succ += 1
         except ReviewException as e:
             print(str(e))
