@@ -14,7 +14,7 @@ from .sync import update_due_time_from_assignment
 class ReviewException(Exception):
     pass
 
-def review_subject(config, col, subject_id, assignment=None):
+def review_subject(config, col, subject_id, assignment=None, learn_ahead_secs=0):
     try:
         if assignment:
             res = { "data": [assignment] }
@@ -41,7 +41,7 @@ def review_subject(config, col, subject_id, assignment=None):
                 if not started:
                     raise ReviewException("Failed to submit review to WaniKani:<br/>Card not available for review yet.")
                 elif config["SYNC_DUE_TIME"]:
-                    update_due_time_from_assignment(config, col, res["data"][0])
+                    update_due_time_from_assignment(config, col, res["data"][0], learn_ahead_secs)
                     return True
                 return False
 
@@ -52,7 +52,7 @@ def review_subject(config, col, subject_id, assignment=None):
             })
 
             if config["SYNC_DUE_TIME"]:
-                update_due_time_from_assignment(config, col, update_res["resources_updated"]["assignment"])
+                update_due_time_from_assignment(config, col, update_res["resources_updated"]["assignment"], learn_ahead_secs)
                 return True
         else:
             raise ReviewException("Found an unexpected amount of assignments for this card: " + str(len(res["data"])))
@@ -68,8 +68,10 @@ def review_subject(config, col, subject_id, assignment=None):
 def submit_assignment_op(config, col, subject_id):
     res = OpChanges()
 
+    learn_ahead_secs = col.get_preferences().scheduling.learn_ahead_secs
+
     try:
-        if review_subject(config, col, subject_id):
+        if review_subject(config, col, subject_id, learn_ahead_secs):
             res.card = True
             res.study_queues = True
 
@@ -131,6 +133,8 @@ def autoreview_op(col):
     granted_lvl = user_data["data"]["subscription"]["max_level_granted"]
     user_lvl = user_data["data"]["level"]
 
+    learn_ahead_secs = col.get_preferences().scheduling.learn_ahead_secs
+
     available_subjects = {}
     assignments_lessons = wk_api_req("assignments?immediately_available_for_lessons=true")
     assignments_reviews = wk_api_req("assignments?immediately_available_for_review=true")
@@ -158,7 +162,7 @@ def autoreview_op(col):
             continue
 
         try:
-            if review_subject(config, col, subj_id, available_subjects["subj_id"]):
+            if review_subject(config, col, subj_id, available_subjects["subj_id"], learn_ahead_secs):
                 res.card = True
                 res.study_queues = True
             succ += 1

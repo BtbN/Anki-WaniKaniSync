@@ -114,7 +114,7 @@ def fetch_sub_subjects(config, subjects):
     return sub_subjects
 
 
-def update_due_time_from_assignment(config, col, assignment):
+def update_due_time_from_assignment(config, col, assignment, learn_ahead_secs):
     subject_id = assignment["data"]["subject_id"]
     card_ids = col.find_cards(f'"note:{config["NOTE_TYPE_NAME"]}" "deck:{config["DECK_NAME"]}" card\\_id:{subject_id}')
     if not card_ids:
@@ -141,7 +141,7 @@ def update_due_time_from_assignment(config, col, assignment):
         card_queue = QUEUE_TYPE_LRN
 
         avail_at = wkparsetime(assignment["data"]["available_at"])
-        card_due = int(avail_at.timestamp())
+        card_due = int(avail_at.timestamp()) + learn_ahead_secs
 
     cards = []
     for card_id in card_ids:
@@ -167,12 +167,14 @@ def sync_assignment_dues(config, col):
         req += "&updated_after=" + last_sync
     res = wk_api_req(req)
 
+    learn_ahead_secs = col.get_preferences().scheduling.learn_ahead_secs
+
     i = 0
     cnt = 0
     for assignment in res["data"]:
         i += 1
         report_progress(f'Updating due times {i}/{res["total_count"]}...', i, res["total_count"])
-        cnt += update_due_time_from_assignment(config, col, assignment)
+        cnt += update_due_time_from_assignment(config, col, assignment, learn_ahead_secs)
 
     return cnt
 
