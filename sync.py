@@ -155,6 +155,26 @@ def update_due_time_from_assignment(config, col, assignment):
         cards.append(card)
 
     col.update_cards(cards)
+    return len(cards)
+
+
+def sync_assignment_dues(config, col):
+    last_sync = config["_LAST_DUE_SYNC"]
+    config["_LAST_DUE_SYNC"] = wknow()
+
+    req = "assignments?hidden=false"
+    if last_sync:
+        req += "&updated_after=" + last_sync
+    res = wk_api_req(req)
+
+    i = 0
+    cnt = 0
+    for assignment in res["data"]:
+        i += 1
+        report_progress(f'Updating due times {i}/{res["total_count"]}...', i, res["total_count"])
+        cnt += update_due_time_from_assignment(config, col, assignment)
+
+    return cnt
 
 
 def do_sync_op(col):
@@ -187,7 +207,10 @@ def do_sync_op(col):
         result.changes.card = True
         result.changes.note = True
         result.changes.note = True
-        result.changes.study_queues = True #TODO: maybe move to own function which updates next review time
+
+    if config["SYNC_DUE_TIME"]:
+        if sync_assignment_dues(config, col) > 0:
+            result.changes.study_queues = True
 
     mw.addonManager.writeConfig(__name__, config)
 

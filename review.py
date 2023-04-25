@@ -7,6 +7,7 @@ from requests.exceptions import HTTPError
 
 from .wk_api import wk_api_req
 from .utils import wkparsetime, show_tooltip, report_progress
+from .sync import update_due_time_from_assignment
 
 
 class ReviewException(Exception):
