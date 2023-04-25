@@ -1,6 +1,6 @@
 from aqt import mw
 from aqt.operations import CollectionOp
-from anki.collection import OpChanges, OpChangesWithCount
+from anki.collection import OpChangesWithCount
 from anki.consts import QUEUE_TYPE_NEW, QUEUE_TYPE_LRN, QUEUE_TYPE_REV, QUEUE_TYPE_SUSPENDED, CARD_TYPE_NEW, CARD_TYPE_LRN, CARD_TYPE_REV
 
 from .wk_api import wk_api_req

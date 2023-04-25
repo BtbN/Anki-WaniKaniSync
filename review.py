@@ -1,5 +1,6 @@
 from aqt import mw
-from aqt.operations import QueryOp
+from aqt.operations import CollectionOp
+from anki.collection import OpChanges
 
 import itertools
 from datetime import datetime, timezone
@@ -13,7 +14,7 @@ from .sync import update_due_time_from_assignment
 class ReviewException(Exception):
     pass
 
-def review_subject(subject_id, assignment=None):
+def review_subject(config, col, subject_id, assignment=None):
     try:
         if assignment:
             res = { "data": [assignment] }
@@ -25,7 +26,7 @@ def review_subject(subject_id, assignment=None):
             raise ReviewException(f"Assignment for subject {subject_id} not found.")
         elif len(res["data"]) == 1:
             if res["data"][0]["data"]["burned_at"]:
-                return
+                return False
 
             started = False
             if not res["data"][0]["data"]["started_at"]:
@@ -39,13 +40,20 @@ def review_subject(subject_id, assignment=None):
             if avail_time > datetime.now(timezone.utc):
                 if not started:
                     raise ReviewException("Failed to submit review to WaniKani:<br/>Card not available for review yet.")
-                return
+                elif config["SYNC_DUE_TIME"]:
+                    update_due_time_from_assignment(config, col, res["data"][0])
+                    return True
+                return False
 
-            wk_api_req("reviews", data={
+            update_res = wk_api_req("reviews", data={
                 "review": {
                     "assignment_id": res["data"][0]["id"]
                 }
             })
+
+            if config["SYNC_DUE_TIME"]:
+                update_due_time_from_assignment(config, col, update_res["resources_updated"]["assignment"])
+                return True
         else:
             raise ReviewException("Found an unexpected amount of assignments for this card: " + str(len(res["data"])))
     except HTTPError as e:
@@ -54,10 +62,17 @@ def review_subject(subject_id, assignment=None):
         else:
             raise
 
+    return False
 
-def submit_assignment_op(subject_id):
+
+def submit_assignment_op(config, col, subject_id):
+    res = OpChanges()
+
     try:
-        review_subject(subject_id)
+        if review_subject(config, col, subject_id):
+            res.card = True
+            res.study_queues = True
+
         print(f"Submitted subject {subject_id} review to WaniKani.")
     except ReviewException as e:
         show_tooltip(str(e), period=5000)
@@ -66,6 +81,8 @@ def submit_assignment_op(subject_id):
             "Failed submitting review to WaniKani:<br/>" + str(e),
             period=5000
         )
+
+    return res
 
 
 def analyze_answer(reviewer, card, ease):
@@ -96,17 +113,15 @@ def analyze_answer(reviewer, card, ease):
         if other_card.reps < card.reps:
             return
 
-    QueryOp(
-        parent=mw,
-        op=lambda col: submit_assignment_op(subject_id),
-        success=lambda res: None
-    ).run_in_background()
+    CollectionOp(mw, lambda col: submit_assignment_op(config, col, subject_id)).run_in_background()
 
 
 def autoreview_op(col):
+    res = OpChanges()
+
     config = mw.addonManager.getConfig(__name__)
     if not config["WK_API_KEY"]:
-        return
+        return res
 
     user_data = wk_api_req("user")
     granted_lvl = user_data["data"]["subscription"]["max_level_granted"]
@@ -139,19 +154,19 @@ def autoreview_op(col):
             continue
 
         try:
-            review_subject(subj_id, available_subjects["subj_id"])
+            if review_subject(config, col, subj_id, available_subjects["subj_id"]):
+                res.card = True
+                res.study_queues = True
             succ += 1
         except ReviewException as e:
             print(str(e))
 
+    return res
+
 
 
 def do_autoreview():
-    QueryOp(
-        parent=mw,
-        op=lambda col: autoreview_op(col),
-        success=lambda res: None
-    ).with_progress().run_in_background()
+    CollectionOp(mw, autoreview_op).run_in_background()
 
 
 def auto_autoreview():
