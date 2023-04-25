@@ -4,7 +4,7 @@ from anki.collection import OpChangesWithCount
 from anki.consts import QUEUE_TYPE_NEW, QUEUE_TYPE_LRN, QUEUE_TYPE_REV, QUEUE_TYPE_SUSPENDED, CARD_TYPE_NEW, CARD_TYPE_LRN, CARD_TYPE_REV
 
 from .wk_api import wk_api_req
-from .importer import ensure_notes, ensure_deck, convert_wk3_notes
+from .importer import ensure_notes, ensure_deck, convert_wk3_notes, sort_new_cards
 from .utils import wknow, wkparsetime, report_progress
 
 
@@ -211,6 +211,10 @@ def do_sync_op(col):
         if sync_assignment_dues(config, col) > 0:
             result.changes.study_queues = True
 
+    if result.changes.card or result.changes.study_queues:
+        report_progress("Sorting deck...", 100, 100)
+        sort_new_cards(col, config["DECK_NAME"])
+
     mw.addonManager.writeConfig(__name__, config)
 
     return result
@@ -243,7 +247,10 @@ def do_convert_wk3_op(col):
     if ensure_notes(col, subjects, sub_subjects, config["NOTE_TYPE_NAME"], config["DECK_NAME"]):
         result.changes.card = True
         result.changes.note = True
-        result.changes.note = True
+
+    if result.changes.card:
+        report_progress("Sorting deck...", 100, 100)
+        sort_new_cards(col, config["DECK_NAME"])
 
     config["SYNC_ALL"] = True
     config["SYNC_DUE_TIME"] = False

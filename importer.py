@@ -321,9 +321,6 @@ def ensure_notes(col, subjects, sub_subjects, note_name, deck_name):
     importer.initMapping()
     importer.run()
 
-    report_progress("Sorting deck...", 100, 100)
-    sort_new_cards(col, deck_name)
-
     report_progress("Suspending hidden subjects...", 100, 100)
     suspend_hidden_notes(col, subjects, note_name)
 
