@@ -1,10 +1,11 @@
 from aqt import mw
 from aqt.operations import CollectionOp
 from anki.collection import OpChanges, OpChangesWithCount
+from anki.consts import QUEUE_TYPE_NEW, QUEUE_TYPE_LRN, QUEUE_TYPE_REV, QUEUE_TYPE_SUSPENDED, CARD_TYPE_NEW, CARD_TYPE_LRN, CARD_TYPE_REV
 
 from .wk_api import wk_api_req
 from .importer import ensure_notes, ensure_deck, convert_wk3_notes
-from .utils import wknow, report_progress
+from .utils import wknow, wkparsetime, report_progress
 
 
 def get_available_subject_ids(config):
@@ -111,6 +112,49 @@ def fetch_sub_subjects(config, subjects):
     report_progress("Done fetching sub-subjects...", 0, 0)
 
     return sub_subjects
+
+
+def update_due_time_from_assignment(config, col, assignment):
+    subject_id = assignment["data"]["subject_id"]
+    card_ids = col.find_cards(f'"note:{config["NOTE_TYPE_NAME"]}" "deck:{config["DECK_NAME"]}" card\\_id:{subject_id}')
+    if not card_ids:
+        return
+
+    if assignment["data"]["burned_at"]:
+        # Card is burned: make it a review card, and leave alone due time
+        card_type = CARD_TYPE_REV
+        card_queue = QUEUE_TYPE_REV
+        card_due = None
+    elif not assignment["data"]["unlocked_at"]:
+        # Card is not unlocked: suspend it
+        card_type = CARD_TYPE_NEW
+        card_queue = QUEUE_TYPE_SUSPENDED
+        card_due = 0
+    elif not assignment["data"]["available_at"]:
+        # Card is in lesson mode: make it a new card
+        card_type = CARD_TYPE_NEW
+        card_queue = QUEUE_TYPE_NEW
+        card_due = 0
+    else:
+        # Card is in a srs stage: make it a learning card, set due to precise timestamp
+        card_type = CARD_TYPE_LRN
+        card_queue = QUEUE_TYPE_LRN
+
+        avail_at = wkparsetime(assignment["data"]["available_at"])
+        card_due = int(avail_at.timestamp())
+
+    cards = []
+    for card_id in card_ids:
+        card = col.get_card(card_id)
+        card.type = card_type
+        card.queue = card_queue
+
+        if card_due is not None:
+            card.due = card_due
+
+        cards.append(card)
+
+    col.update_cards(cards)
 
 
 def do_sync_op(col):
