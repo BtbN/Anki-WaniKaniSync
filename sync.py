@@ -206,7 +206,6 @@ def do_sync_op(col):
     if ensure_notes(col, subjects, sub_subjects, config["NOTE_TYPE_NAME"], config["DECK_NAME"]):
         result.changes.card = True
         result.changes.note = True
-        result.changes.note = True
 
     if config["SYNC_DUE_TIME"]:
         if sync_assignment_dues(config, col) > 0:
