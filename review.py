@@ -138,7 +138,7 @@ def autoreview_op(col):
         available_subjects[assignment["data"]["subject_id"]] = assignment
 
     due_limit = 7
-    note_ids = col.find_notes(f'prop:due>{due_limit} "deck:{config["DECK_NAME"]}" "note:{config["NOTE_TYPE_NAME"]}"')
+    note_ids = col.find_notes(f'prop:due>{due_limit} -is:suspended "deck:{config["DECK_NAME"]}" "note:{config["NOTE_TYPE_NAME"]}"')
     i = 0
     succ = 0
     for note_id in note_ids:
