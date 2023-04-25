@@ -5,6 +5,8 @@
     "SYNC_ALL": false,
     "SYNC_DUE_TIME": true,
     "REPORT_REVIEWS": true,
+    "AUTO_SYNC": false,
+    "AUTO_REPORT": false,
     "_LAST_SUBJECTS_SYNC": "",
     "_LAST_ASSIGNMENTS_SYNC": ""
 }

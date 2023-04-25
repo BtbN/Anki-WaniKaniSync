@@ -151,3 +151,10 @@ def do_autoreview():
         op=lambda col: autoreview_op(col),
         success=lambda res: None
     ).with_progress().run_in_background()
+
+
+def auto_autoreview():
+    config = mw.addonManager.getConfig(__name__)
+    if not config["WK_API_KEY"] or not config["AUTO_SYNC"] or not config["_LAST_SUBJECTS_SYNC"]:
+        return
+    do_autoreview()

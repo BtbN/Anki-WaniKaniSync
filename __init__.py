@@ -6,8 +6,8 @@ from aqt import mw, gui_hooks
 from aqt.qt import *
 from aqt.utils import qconnect
 
-from .sync import do_sync, do_convert_wk3
-from .review import analyze_answer, do_autoreview
+from .sync import do_sync, do_convert_wk3, auto_sync
+from .review import analyze_answer, do_autoreview, auto_autoreview
 
 
 menu = QMenu("WaniKani", mw)
@@ -27,3 +27,5 @@ menu.addAction(convert_action)
 
 
 gui_hooks.reviewer_did_answer_card.append(analyze_answer)
+gui_hooks.profile_did_open.append(auto_sync)
+gui_hooks.profile_did_open.append(auto_autoreview)

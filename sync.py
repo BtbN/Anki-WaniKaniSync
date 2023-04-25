@@ -192,3 +192,10 @@ def do_sync():
 
 def do_convert_wk3():
     CollectionOp(mw, do_convert_wk3_op).run_in_background()
+
+
+def auto_sync():
+    config = mw.addonManager.getConfig(__name__)
+    if not config["WK_API_KEY"] or not config["AUTO_REPORT"]:
+        return
+    do_autoreview()
