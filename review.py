@@ -71,7 +71,7 @@ def submit_assignment_op(config, col, subject_id):
     learn_ahead_secs = col.get_preferences().scheduling.learn_ahead_secs
 
     try:
-        if review_subject(config, col, subject_id, learn_ahead_secs):
+        if review_subject(config, col, subject_id, None, learn_ahead_secs):
             res.card = True
             res.study_queues = True
 
