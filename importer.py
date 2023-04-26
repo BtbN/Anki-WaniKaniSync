@@ -4,7 +4,7 @@ from aqt import mw
 import pathlib, shutil
 import requests
 
-from .utils import report_progress
+from .utils import report_progress, show_tooltip
 
 
 class WKImporter(NoteImporter):
@@ -270,6 +270,31 @@ def ensure_deck(col, note_name, deck_name):
         ret = True
 
     return ret
+
+
+def do_update_html():
+    datadir = pathlib.Path(__file__).parent.resolve() / "data"
+    config = mw.addonManager.getConfig(__name__)
+
+    model = mw.col.models.by_name(config["NOTE_TYPE_NAME"])
+    if not model:
+        show_tooltip("WaniKani note type not found.")
+        return
+
+    model["css"] = (datadir / "style.css").read_text(encoding="utf-8")
+
+    for tmpl in model["tmpls"]:
+        if tmpl["name"].lower() == "meaning":
+            tmpl["qfmt"] = (datadir / "meaning_front.html").read_text(encoding="utf-8")
+            tmpl["afmt"] = (datadir / "meaning_back.html").read_text(encoding="utf-8")
+        elif tmpl["name"].lower() == "reading":
+            tmpl["qfmt"] = (datadir / "reading_front.html").read_text(encoding="utf-8")
+            tmpl["afmt"] = (datadir / "reading_back.html").read_text(encoding="utf-8")
+        else:
+            show_tooltip("Unknown template name in note type.")
+            return
+
+    mw.col.models.update_dict(model)
 
 
 def sort_new_cards(col, deck_name):

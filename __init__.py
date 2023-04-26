@@ -8,6 +8,7 @@ from aqt.utils import qconnect
 
 from .sync import do_sync, do_convert_wk3, auto_sync
 from .review import analyze_answer, do_autoreview, auto_autoreview
+from .importer import do_update_html
 
 
 menu = QMenu("WaniKani", mw)
@@ -24,6 +25,10 @@ menu.addAction(review_action)
 convert_action = QAction("Convert WK3", mw)
 qconnect(convert_action.triggered, do_convert_wk3)
 menu.addAction(convert_action)
+
+update_html_action = QAction("Overwrite Card HTML", mw)
+qconnect(update_html_action.triggered, do_update_html)
+menu.addAction(update_html_action)
 
 
 gui_hooks.reviewer_did_answer_card.append(analyze_answer)
