@@ -162,6 +162,8 @@ def sync_assignment_dues(config, col):
     last_sync = config["_LAST_DUE_SYNC"]
     config["_LAST_DUE_SYNC"] = wknow()
 
+    report_progress("Syncing due times...", 0, 0)
+
     req = "assignments?hidden=false"
     if last_sync:
         req += "&updated_after=" + last_sync

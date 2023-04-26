@@ -104,15 +104,22 @@ def analyze_answer(reviewer, card, ease):
     note = card.note()
     subject_id = note["card_id"]
 
-    # Find sibling cards.
-    # If some exist, they all have to have the same amount of answers (or more) to cause submission of a review.
-    # Not ideal, since the other one can just have been "Again'ed" a bunch, but I don't have a better idea for now.
+    # Analyze sibling cards:
+    # If any of the (usually just one) sibling cards are due for review, don't submit.
+    card_ids = mw.col.find_cards(f'"deck:{deck_name}" -cid:{card.id} nid:{card.nid} is:due')
+    if card_ids:
+        print("Not submitting review to WaniKani, a sibling card is due.")
+        return
+
+    # If one is not due, but the last answer was again or hard, don't submit either.
     card_ids = mw.col.find_cards(f'"deck:{deck_name}" -cid:{card.id} nid:{card.nid}')
-    print("This reps: " + str(card.reps))
     for card_id in card_ids:
-        other_card = mw.col.get_card(card_id)
-        print("Other reps: " + str(other_card.reps))
-        if other_card.reps < card.reps:
+        stats = mw.col.card_stats_data(card_id)
+        # It seems like the first revlog item returned is always the latest,
+        # but there is no explicit sorting in the SQL query I found in the backend.
+        # So sort manually to be sure.
+        if max(stats.revlog, key=lambda r: r.time).button_chosen < 3:
+            print("Not submitting review to WaniKani, a sibling card has a negative latest review.")
             return
 
     QueryOp(
