@@ -115,6 +115,10 @@ def analyze_answer(reviewer, card, ease):
     card_ids = mw.col.find_cards(f'"deck:{deck_name}" -is:suspended -cid:{card.id} nid:{card.nid}')
     for card_id in card_ids:
         stats = mw.col.card_stats_data(card_id)
+        if len(stats.revlog) <= 0:
+            print("Not submitting review to WaniKani, a sibling card never had a review.")
+            return
+
         # It seems like the first revlog item returned is always the latest,
         # but there is no explicit sorting in the SQL query I found in the backend.
         # So sort manually to be sure.
