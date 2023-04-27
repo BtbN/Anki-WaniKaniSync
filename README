@@ -1,0 +1,71 @@
+Anki AddOn to sync WaniKani into an Anki Deck
+---------------------------------------------
+
+Based on the WK3: Tokyo Drift deck for card style and JavaScript.
+
+The addon supports bi-directional sync, if so desired by the user.
+It can sync the Card-Due-Times to the times on WaniKani, and additonally report
+any reviews done by the user back to WaniKani, so you progress on the Website
+while learning in Anki.
+
+This generally only works properly if Anki was used when starting the entire study.
+If you used the WK3 deck before, I'd highly recommend not turn on the Due-Time-Sync,
+since it might heavily mess up your study schedule.
+
+Instead, there is a function to automatically report reviews for all mature (due in
+more than 7 days) notes to WaniKani, which can be optionally automatically run on every
+Anki startup, to over time bring your Anki-Profile up to date with your Anki-Progress.
+
+The most simple way to use the AddOn is to only use it to sync the Subjects from WaniKani,
+and periodically update them (WK maintains their dataset quite frequently to include
+community feedback).
+
+It's not possible to sync notes your WaniKani account does not have access to.
+So if you are on a free account, you'll be limited to the first three levels.
+
+
+After installation, a WaniKani submenu will appear in the Tools-Menu of Anki.
+This is where you control most actions. The menu items should be self explanatory.
+
+
+There is an option to migrate from a WK3: Tokyo Drift deck. This will go over all existing
+notes in a pre-existing deck, and try to match them to a Subject on WaniKani.
+If it successfully manages to assign a subject to every card, it will update the IDs, and
+from then on allow you to pull note updates via the AddOn.
+
+Keep in mind that this is a one-way process. Once migrated, you can no longer install
+normal WK3 deck updates.
+
+
+Configuration
+-------------
+
+WK_API_KEY: Create an Api-Key in your WaniKani profile and put it here.
+            If you want to use the AddOn to do bi-directional sync, make sure
+            to enable the assignments:start and reviews:create permissions.
+
+NOTE_TYPE_NAME: Name of the Note-Type which will be used for the WaniKani sync.
+                Set this to whatever you like. If you want to migrate from WK3,
+                set this to the _exact_ name of the existing Note-Type.
+
+DECK_NAME: Same as above, but this time for the name of the deck.
+
+SYNC_ALL: Controls whether the AddOn will sync ALL subjects/cards from WaniKani,
+          or just the ones you have unlocked yet.
+          If you are starting a fresh study of WaniKani, you can turn this on,
+          and also turn on due-time syncing and review reporting, and Anki
+          should keep WaniKani reasonably up to date with your progress.
+
+REPORT_REVIEWS: If enabled, the AddOn will try to submit a review to WaniKani whenever
+                a card is rated Good or Easy, and the sibling card isn't due or was last
+                rated Hard or Again.
+
+SYNC_DUE_TIME: If enabled, the AddOn will set the due times according to whenever WaniKani
+               thinks is best. This can clash with how Anki wants to do things, so it's
+               inevitably a bit janked. But it should mostly prevent Anki from showing you
+               cards too early, breaking reviews.
+               Do NOT turn this on if you have pre-existing progress in your deck, unless
+               you really know what you're doing and have a backup.
+
+AUTO_SYNC: If enabled, the AddOn will run the Sync-Function on Anki-Startup.
+AUTO_REPORT: If enabled, the AddOn will run the Mature-Review-Submission-Function on Anki-Startup.
