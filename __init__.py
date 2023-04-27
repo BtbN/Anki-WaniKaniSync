@@ -10,6 +10,8 @@ from .sync import do_sync, do_convert_wk3, do_clear_cache, auto_sync
 from .review import analyze_answer, do_autoreview, auto_autoreview
 from .importer import do_update_html
 
+from .play_all_audio import install_play_all_audio
+
 
 menu = QMenu("WaniKani", mw)
 mw.form.menuTools.addMenu(menu)
@@ -38,3 +40,6 @@ menu.addAction(clear_cache_action)
 gui_hooks.reviewer_did_answer_card.append(analyze_answer)
 gui_hooks.profile_did_open.append(auto_sync)
 gui_hooks.profile_did_open.append(auto_autoreview)
+
+
+install_play_all_audio()
