@@ -24,6 +24,14 @@ review_action = QAction("Review Mature Cards", mw)
 qconnect(review_action.triggered, do_autoreview)
 menu.addAction(review_action)
 
+menu.addSeparator()
+
+clear_cache_action = QAction("Clear Cache", mw)
+qconnect(clear_cache_action.triggered, do_clear_cache)
+menu.addAction(clear_cache_action)
+
+menu.addSeparator()
+
 convert_action = QAction("Convert WK3", mw)
 qconnect(convert_action.triggered, do_convert_wk3)
 menu.addAction(convert_action)
@@ -31,10 +39,6 @@ menu.addAction(convert_action)
 update_html_action = QAction("Overwrite Card HTML", mw)
 qconnect(update_html_action.triggered, do_update_html)
 menu.addAction(update_html_action)
-
-clear_cache_action = QAction("Clear Cache", mw)
-qconnect(clear_cache_action.triggered, do_clear_cache)
-menu.addAction(clear_cache_action)
 
 
 gui_hooks.reviewer_did_answer_card.append(analyze_answer)
