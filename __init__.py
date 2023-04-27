@@ -6,7 +6,7 @@ from aqt import mw, gui_hooks
 from aqt.qt import *
 from aqt.utils import qconnect
 
-from .sync import do_sync, do_convert_wk3, auto_sync
+from .sync import do_sync, do_convert_wk3, do_clear_cache, auto_sync
 from .review import analyze_answer, do_autoreview, auto_autoreview
 from .importer import do_update_html
 
@@ -29,6 +29,10 @@ menu.addAction(convert_action)
 update_html_action = QAction("Overwrite Card HTML", mw)
 qconnect(update_html_action.triggered, do_update_html)
 menu.addAction(update_html_action)
+
+clear_cache_action = QAction("Clear Cache", mw)
+qconnect(clear_cache_action.triggered, do_clear_cache)
+menu.addAction(clear_cache_action)
 
 
 gui_hooks.reviewer_did_answer_card.append(analyze_answer)

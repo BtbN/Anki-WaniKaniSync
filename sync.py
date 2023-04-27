@@ -271,6 +271,14 @@ def do_convert_wk3():
     CollectionOp(mw, do_convert_wk3_op).run_in_background()
 
 
+def do_clear_cache():
+    config = mw.addonManager.getConfig(__name__)
+    config["_LAST_ASSIGNMENTS_SYNC"] = ""
+    config["_LAST_SUBJECTS_SYNC"] = ""
+    config["_LAST_DUE_SYNC"] = ""
+    mw.addonManager.writeConfig(__name__, config)
+
+
 def auto_sync():
     config = mw.addonManager.getConfig(__name__)
     if not config["WK_API_KEY"] or not config["AUTO_REPORT"]:
