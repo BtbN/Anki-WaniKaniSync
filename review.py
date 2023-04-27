@@ -106,13 +106,13 @@ def analyze_answer(reviewer, card, ease):
 
     # Analyze sibling cards:
     # If any of the (usually just one) sibling cards are due for review, don't submit.
-    card_ids = mw.col.find_cards(f'"deck:{deck_name}" -cid:{card.id} nid:{card.nid} is:due')
+    card_ids = mw.col.find_cards(f'"deck:{deck_name}" -is:suspended -cid:{card.id} nid:{card.nid} is:due')
     if card_ids:
         print("Not submitting review to WaniKani, a sibling card is due.")
         return
 
     # If one is not due, but the last answer was again or hard, don't submit either.
-    card_ids = mw.col.find_cards(f'"deck:{deck_name}" -cid:{card.id} nid:{card.nid}')
+    card_ids = mw.col.find_cards(f'"deck:{deck_name}" -is:suspended -cid:{card.id} nid:{card.nid}')
     for card_id in card_ids:
         stats = mw.col.card_stats_data(card_id)
         # It seems like the first revlog item returned is always the latest,
