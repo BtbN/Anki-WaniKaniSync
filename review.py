@@ -192,6 +192,6 @@ def auto_autoreview():
     config = mw.addonManager.getConfig(__name__)
     if not config["WK_API_KEY"] or not config["_LAST_SUBJECTS_SYNC"]:
         return
-    if not config["AUTO_SYNC"] or not config["REPORT_REVIEWS"]:
+    if not config["AUTO_REPORT"] or not config["REPORT_REVIEWS"]:
         return
     do_autoreview()

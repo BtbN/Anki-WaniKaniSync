@@ -281,6 +281,6 @@ def do_clear_cache():
 
 def auto_sync():
     config = mw.addonManager.getConfig(__name__)
-    if not config["WK_API_KEY"] or not config["AUTO_REPORT"]:
+    if not config["WK_API_KEY"] or not config["AUTO_SYNC"]:
         return
     do_sync()
