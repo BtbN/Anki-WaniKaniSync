@@ -36,7 +36,7 @@ def wk_api_req(ep, full=True, data=None, put=False):
         next_url = data["pages"]["next_url"]
         while next_url:
             with limiter.ratelimit(api_key, delay=True):
-                res = requests.get(next_url, headers=headers)
+                res = requests.get(next_url.replace("//www.", "//api."), headers=headers)
             res.raise_for_status()
             new_data = res.json()
 
