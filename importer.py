@@ -380,6 +380,7 @@ def convert_wk3_notes(col, subjects, note_name):
         raise Exception("No notes found, can't convert.")
 
     changed_notes = []
+    suspend_ids = []
     i = 0
     for note_id in note_ids:
         note = col.get_note(note_id)
@@ -393,11 +394,11 @@ def convert_wk3_notes(col, subjects, note_name):
             tps = subj_by_char[note_char]
 
             if ct not in tps:
-                raise Exception("Matching character has no matching card type!")
-
-            note["card_id"] = str(tps[ct]["id"])
-            changed_notes.append(note)
-            continue
+                print(f"Matching character '{note_char}' has no matching card type: {ct} not in {repr(tps.keys())}")
+            else:
+                note["card_id"] = str(tps[ct]["id"])
+                changed_notes.append(note)
+                continue
 
         found = False
         for slug in subj_by_slug.keys():
@@ -406,15 +407,18 @@ def convert_wk3_notes(col, subjects, note_name):
                 tps = subj_by_slug[slug]
 
                 if ct not in tps:
-                    raise Exception("Matching character has no matching card type!")
-
-                note["card_id"] = str(tps[ct]["id"])
-                changed_notes.append(note)
-                found = True
-                break
+                    print(f"Matching slug '{note_char}' has no matching card type: {ct} not in {repr(tps.keys())}")
+                else:
+                    note["card_id"] = str(tps[ct]["id"])
+                    changed_notes.append(note)
+                    found = True
+                    break
         if found:
             continue
 
-        raise Exception("Could not match note to subject: " + note["Characters"] + "/" + note["card_id"])
+        print("Could not match note to subject, suspending: " + note["Characters"] + "/" + note["card_id"])
+        suspend_ids.append(note_id)
 
     col.update_notes(changed_notes)
+    if suspend_ids:
+        col.sched.suspend_notes(suspend_ids)
