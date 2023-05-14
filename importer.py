@@ -3,6 +3,7 @@ from aqt import mw
 
 import pathlib, shutil
 import requests
+import html
 
 from .utils import report_progress, show_tooltip
 
@@ -381,6 +382,7 @@ def convert_wk3_notes(col, subjects, note_name):
 
     changed_notes = []
     suspend_ids = []
+    processed_subs = {}
     i = 0
     for note_id in note_ids:
         note = col.get_note(note_id)
@@ -396,20 +398,30 @@ def convert_wk3_notes(col, subjects, note_name):
             if ct not in tps:
                 print(f"Matching character '{note_char}' has no matching card type: {ct} not in {repr(tps.keys())}")
             else:
-                note["card_id"] = str(tps[ct]["id"])
+                id = tps[ct]["id"]
+                if id in processed_subs:
+                    raise Exception(f"Duplicate match detected for: {id} {tps[ct]['object']} {html.escape(note_char)} vs. {html.escape(processed_subs[id]['Characters'])}")
+                processed_subs[id] = note
+
+                note["card_id"] = str(id)
                 changed_notes.append(note)
                 continue
 
         found = False
         for slug in subj_by_slug.keys():
-            if slug in note_char:
+            if f'"radical-{slug}"' in note_char:
                 ct = note["Card_Type"].lower()
                 tps = subj_by_slug[slug]
 
                 if ct not in tps:
                     print(f"Matching slug '{note_char}' has no matching card type: {ct} not in {repr(tps.keys())}")
                 else:
-                    note["card_id"] = str(tps[ct]["id"])
+                    id = tps[ct]["id"]
+                    if id in processed_subs:
+                        raise Exception(f"Duplicate slug match detected for: {id} {tps[ct]['object']} {html.escape(note_char)} vs. {html.escape(processed_subs[id]['Characters'])}")
+                    processed_subs[id] = note
+
+                    note["card_id"] = str(id)
                     changed_notes.append(note)
                     found = True
                     break
