@@ -68,8 +68,8 @@ class WKImporter(NoteImporter):
             ", ".join(data["parts_of_speech"]) if "parts_of_speech" in data else "",
 
             ", ".join(meanings),
-            data["meaning_mnemonic"],
-            data["meaning_hint"] if "meaning_hint" in data else "",
+            self.html_newlines(data.get("meaning_mnemonic", "") or ""),
+            self.html_newlines(data.get("meaning_hint", "") or ""),
             ", ".join(meanings_whl + meanings),
 
             readings.get("primary", "") or "",
@@ -77,8 +77,8 @@ class WKImporter(NoteImporter):
             ", ".join(readings.get("kunyomi", [])),
             ", ".join(readings.get("nanori", [])),
             ", ".join(readings.get("accepted", [])),
-            data.get("reading_mnemonic", ""),
-            data.get("reading_hint", ""),
+            self.html_newlines(data.get("reading_mnemonic", "") or ""),
+            self.html_newlines(data.get("reading_hint", "") or ""),
 
             ", ".join(comp_chars),
             ", ".join(comp_mean),
@@ -212,6 +212,9 @@ class WKImporter(NoteImporter):
             res += f"[sound:{filename}]"
 
         return res
+
+    def html_newlines(self, inp):
+        return inp.replace("\r", "").replace("\n", "<br/>")
 
 
 
