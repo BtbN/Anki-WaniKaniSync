@@ -64,7 +64,7 @@ class WKImporter(NoteImporter):
             subject["id"],
             data["level"]*10000 + data["lesson_position"],
             self.get_character(subject),
-            subject["object"].capitalize(),
+            subject["object"].replace("_", " ").title(),
             ", ".join(data["parts_of_speech"]) if "parts_of_speech" in data else "",
 
             ", ".join(meanings),
@@ -97,7 +97,7 @@ class WKImporter(NoteImporter):
 
             self.ensure_audio(subject),
 
-            "Lesson_" + str(data["level"]) + " " + subject["object"].capitalize()
+            "Lesson_" + str(data["level"]) + " " + subject["object"].title()
         ]
 
         note.fields = [str(f) for f in note.fields]

@@ -221,7 +221,7 @@ if (combinations.length === 0) {
 
 <!--SCRIPT: Slice and add context sentences.-->
 <script>
-if ("{{Card_Type}}" == "Vocabulary") {
+if ("{{Card_Type}}" == "Vocabulary" || "{{Card_Type}}" == "Kana Vocabulary") {
 	var sentences = `{{Context_Sentences}}`;
 	var array = sentences.split("|");
 
@@ -258,7 +258,7 @@ if ("{{Card_Type}}" === "Kanji") {
 	contextsection.style.display = "none";
 	compositionsection.style.display = "none";
 } 
-if ("{{Card_Type}}" === "Vocabulary") {
+if ("{{Card_Type}}" === "Vocabulary" || "{{Card_Type}}" == "Kana Vocabulary") {
 	combinationsection.style.display = "none";
 	foundinvocabularysection.style.display = "none";
 } 
@@ -308,7 +308,7 @@ if ("{{Card_Type}}" == "Radical") {
 			div.appendChild(element);
 		}
 	}
-} else if ("{{Card_Type}}" == "Vocabulary") {
+} else if ("{{Card_Type}}" == "Vocabulary" || "{{Card_Type}}" == "Kana Vocabulary") {
 	var character = `{{Components_Characters}}`;
 	var characterarray = character.split(", ");
 	var meaning = "{{Components_Meaning}}";
@@ -469,4 +469,22 @@ setTooltips(kanji, "Kanji");
 setTooltips(radicals, "Radical");
 setTooltips(vocab, "Vocabulary");
 setTooltips(reading, "Reading");
+</script>
+
+<!-- Auto-Play audio -->
+<script>
+if ("{{Card_Type}}" == "Kana Vocabulary") {
+  if ("__IS_PLAY_ALL_AVAILABLE__" === "__YES_IT_IS__") {
+    pycmd('play:a:all');
+  } else {
+    var audios = document.getElementById('reading-audios');
+    var delay = 0;
+    for (var i = 0; i < audios.children.length; i++) {
+      setTimeout((ti) => {
+        pycmd('play:a:'+ti);
+      }, delay, i);
+      delay += 2000;
+    }
+  }
+}
 </script>
