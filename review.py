@@ -152,8 +152,8 @@ def autoreview_op(col):
     for assignment in itertools.chain(assignments_lessons["data"], assignments_reviews["data"]):
         available_assignments[assignment["data"]["subject_id"]] = assignment
 
-    due_limit = 7
-    note_ids = col.find_notes(f'prop:due>{due_limit} -is:suspended "deck:{config["DECK_NAME"]}" "note:{config["NOTE_TYPE_NAME"]}"')
+    ivl_limit = 21
+    note_ids = col.find_notes(f'prop:ivl>={ivl_limit} -is:suspended "deck:{config["DECK_NAME"]}" "note:{config["NOTE_TYPE_NAME"]}"')
     i = 0
     succ = 0
     for note_id in note_ids:
@@ -161,9 +161,9 @@ def autoreview_op(col):
         report_progress(f"Processing potential reviews {i}/{len(note_ids)}...<br/>{succ} Reviews Submitted", i, len(note_ids))
 
         all_card_ids = col.find_cards(f'nid:{note_id} "deck:{config["DECK_NAME"]}"')
-        due_card_ids = col.find_cards(f'prop:due>{due_limit} nid:{note_id} "deck:{config["DECK_NAME"]}"')
+        due_card_ids = col.find_cards(f'prop:ivl>={ivl_limit} nid:{note_id} "deck:{config["DECK_NAME"]}"')
         if len(due_card_ids) != len(all_card_ids):
-            # Not all cards for that note are at the due limit yet, don't submit
+            # Not all cards for that note are mature yet, don't submit
             continue
 
         note = col.get_note(note_id)
