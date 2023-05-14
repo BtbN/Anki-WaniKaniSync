@@ -146,11 +146,11 @@ def autoreview_op(col):
 
     learn_ahead_secs = col.get_preferences().scheduling.learn_ahead_secs
 
-    available_subjects = {}
+    available_assignments = {}
     assignments_lessons = wk_api_req("assignments?immediately_available_for_lessons=true")
     assignments_reviews = wk_api_req("assignments?immediately_available_for_review=true")
     for assignment in itertools.chain(assignments_lessons["data"], assignments_reviews["data"]):
-        available_subjects[assignment["data"]["subject_id"]] = assignment
+        available_assignments[assignment["data"]["subject_id"]] = assignment
 
     due_limit = 7
     note_ids = col.find_notes(f'prop:due>{due_limit} -is:suspended "deck:{config["DECK_NAME"]}" "note:{config["NOTE_TYPE_NAME"]}"')
@@ -169,11 +169,11 @@ def autoreview_op(col):
         note = col.get_note(note_id)
         subj_id = int(note["card_id"])
 
-        if subj_id not in available_subjects:
+        if subj_id not in available_assignments:
             continue
 
         try:
-            if review_subject(config, col, subj_id, available_subjects["subj_id"], learn_ahead_secs):
+            if review_subject(config, col, subj_id, available_assignments[subj_id], learn_ahead_secs):
                 res.card = True
                 res.study_queues = True
             succ += 1
