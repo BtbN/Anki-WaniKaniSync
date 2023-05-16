@@ -137,7 +137,7 @@ class WKImporter(NoteImporter):
         url = subject["data"]["document_url"]
         res = "Online; See on Website; <a href=\"" + url + "\">" + unquote(url) + "</a>"
 
-        if not self.fetch_patterns:
+        if not self.fetch_patterns or subject["object"] == "radical" or subject["object"] == "kanji":
             return res
 
         try:
