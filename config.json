@@ -7,6 +7,7 @@
     "REPORT_REVIEWS": true,
     "AUTO_SYNC": false,
     "AUTO_REPORT": false,
+    "FETCH_CONTEXT_PATTERNS": false,
     "_LAST_SUBJECTS_SYNC": "",
     "_LAST_ASSIGNMENTS_SYNC": "",
     "_LAST_DUE_SYNC": ""

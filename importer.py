@@ -35,6 +35,9 @@ class WKImporter(NoteImporter):
         self.session = requests.Session()
         self.limiter = Limiter(RequestRate(100, Duration.MINUTE))
 
+        config = mw.addonManager.getConfig(__name__)
+        self.fetch_patterns = config["FETCH_CONTEXT_PATTERNS"]
+
     def fields(self):
         return len(self.FIELDS) + 1 # Final unnamed field is the _tags one
 
@@ -133,6 +136,9 @@ class WKImporter(NoteImporter):
     def get_context_patterns(self, subject):
         url = subject["data"]["document_url"]
         res = "Online; See on Website; <a href=\"" + url + "\">" + unquote(url) + "</a>"
+
+        if not self.fetch_patterns:
+            return res
 
         try:
             with self.limiter.ratelimit("wk_import", delay=True):
