@@ -6,6 +6,8 @@ import requests
 import html
 from urllib.parse import unquote
 
+from pyrate_limiter import Duration, RequestRate, Limiter
+
 from .utils import report_progress, show_tooltip
 from .wk_ctx_parser import WKContextParser
 
@@ -31,6 +33,7 @@ class WKImporter(NoteImporter):
         self.sub_subjects = sub_subjects
 
         self.session = requests.Session()
+        self.limiter = Limiter(RequestRate(100, Duration.MINUTE))
 
     def fields(self):
         return len(self.FIELDS) + 1 # Final unnamed field is the _tags one
@@ -132,7 +135,8 @@ class WKImporter(NoteImporter):
         res = "Online; See on Website; <a href=\"" + url + "\">" + unquote(url) + "</a>"
 
         try:
-            req = self.session.get(url)
+            with self.limiter.ratelimit("wk_import", delay=True):
+                req = self.session.get(url)
             req.raise_for_status()
 
             parser = WKContextParser()
@@ -227,7 +231,8 @@ class WKImporter(NoteImporter):
             filepath = dest_dir / filename
 
             if not filepath.exists():
-                req = self.session.get(audio["url"])
+                with self.limiter.ratelimit("wk_import", delay=True):
+                    req = self.session.get(audio["url"])
                 req.raise_for_status()
                 filepath.write_bytes(req.content)
 
