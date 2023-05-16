@@ -4,8 +4,10 @@ from aqt import mw
 import pathlib, shutil
 import requests
 import html
+from urllib.parse import unquote
 
 from .utils import report_progress, show_tooltip
+from .wk_ctx_parser import WKContextParser
 
 
 class WKImporter(NoteImporter):
@@ -92,7 +94,7 @@ class WKImporter(NoteImporter):
             ", ".join(amal_mean),
             ", ".join(amal_read),
 
-            "Online; See on Website; <a href=\"" + subject["data"]["document_url"] + "\">" + subject["data"]["document_url"] + "</a>",
+            self.get_context_patterns(subject),
             self.get_context_sentences(subject),
 
             self.ensure_audio(subject),
@@ -123,6 +125,26 @@ class WKImporter(NoteImporter):
                     res.insert(0, meaning["meaning"])
                 else:
                     res.append(meaning["meaning"])
+        return res
+
+    def get_context_patterns(self, subject):
+        url = subject["data"]["document_url"]
+        res = "Online; See on Website; <a href=\"" + url + "\">" + unquote(url) + "</a>"
+
+        try:
+            req = self.session.get(url)
+            req.raise_for_status()
+
+            parser = WKContextParser()
+            parser.feed(req.text)
+
+            for id in parser.patterns.keys():
+                res += "|" + parser.patterns[id]
+                for collo in parser.collos[id]:
+                    res += ";" + collo[0] + ";" + collo[1]
+        except Exception as e:
+            print("Failed parsing context: " + repr(e))
+
         return res
 
     def get_meanings_whl(self, subject):
