@@ -473,14 +473,5 @@ setTooltips(reading, "Reading");
 <script>
 if ("__IS_PLAY_ALL_AVAILABLE__" === "__YES_IT_IS__") {
   pycmd('play:a:all');
-} else {
-  var audios = document.getElementById('reading-audios');
-  var delay = 0;
-  for (var i = 0; i < audios.children.length; i++) {
-    setTimeout((ti) => {
-      pycmd('play:a:'+ti);
-    }, delay, i);
-    delay += 2000;
-  }
 }
 </script>
