@@ -67,5 +67,15 @@ SYNC_DUE_TIME: If enabled, the AddOn will set the due times according to wheneve
                Do NOT turn this on if you have pre-existing progress in your deck, unless
                you really know what you're doing and have a backup.
 
+FETCH_CONTEXT_PATTERNS: If enabled, parse the WaniKani websites HTML to extract the
+                        "Context Patterns" for each Vocab-Card.
+                        This is _extremely slow_ since the Website is rate limited,
+                        and there are a lot of vocabs.
+                        It's highly recommended to leave this turned off for an initial full
+                        sync (since downloading all the voice clips is under the same rate
+                        limit) and then do an update-run later with this enabled (clear cache for
+                        full update).
+                        Fetching all patterns takes roughly 1.5 hours at the time of writing.
+
 AUTO_SYNC: If enabled, the AddOn will run the Sync-Function on Anki-Startup.
 AUTO_REPORT: If enabled, the AddOn will run the Mature-Review-Submission-Function on Anki-Startup.
