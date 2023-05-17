@@ -12,9 +12,9 @@ This generally only works properly if Anki was used when starting the entire stu
 If you used the WK3 deck before, I'd highly recommend not turn on the Due-Time-Sync,
 since it might heavily mess up your study schedule.
 
-Instead, there is a function to automatically report reviews for all mature (due in
-more than 7 days) notes to WaniKani, which can be optionally automatically run on every
-Anki startup, to over time bring your Anki-Profile up to date with your Anki-Progress.
+Instead, there is a function to automatically report reviews for all mature (interval >=21 days)
+notes to WaniKani, which can be optionally automatically run on every Anki startup, to over time
+bring your Anki-Profile up to date with your Anki-Progress.
 
 The most simple way to use the AddOn is to only use it to sync the Subjects from WaniKani,
 and periodically update them (WK maintains their dataset quite frequently to include
