@@ -228,9 +228,16 @@ class WKImporter(NoteImporter):
 
         dest_dir = pathlib.Path(self.col.media.dir())
         audios = subject["data"]["pronunciation_audios"]
+        readings = subject["data"].get("readings", [])
         res = ""
 
-        for audio in audios:
+        def audio_sort(audio):
+            for i in range(0, len(readings)):
+                if readings[i]["reading"] == audio["metadata"]["reading"]:
+                    return 1000 + (i*1000) + audio["metadata"]["voice_actor_id"]
+            return audio["metadata"]["voice_actor_id"]
+
+        for audio in sorted(audios, key=audio_sort):
             if audio["content_type"] != "audio/mpeg":
                 continue
             filename = f'wk3_{audio["metadata"]["source_id"]}.mp3'
