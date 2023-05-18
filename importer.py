@@ -172,8 +172,12 @@ class WKImporter(NoteImporter):
             "accepted": []
         }
         for reading in readings:
-            if reading["primary"] and subject["object"] != "kanji":
-                res["primary"].append(reading["reading"])
+            if reading["accepted_answer"] and subject["object"] != "kanji":
+                if reading["primary"]:
+                    txt = f'<reading>{reading["reading"]}</reading>'
+                else:
+                    txt = reading["reading"]
+                res["primary"].append(txt)
             if reading["accepted_answer"]:
                 res["accepted"].append(reading["reading"])
             if "type" in reading:
