@@ -80,7 +80,7 @@ class WKImporter(NoteImporter):
             self.html_newlines(data.get("meaning_hint", "") or ""),
             ", ".join(meanings_whl + meanings),
 
-            readings.get("primary", "") or "",
+            ", ".join(readings.get("primary", [])),
             ", ".join(readings.get("onyomi", [])),
             ", ".join(readings.get("kunyomi", [])),
             ", ".join(readings.get("nanori", [])),
@@ -168,18 +168,22 @@ class WKImporter(NoteImporter):
     def get_readings(self, subject):
         readings = subject["data"]["readings"] if "readings" in subject["data"] else []
         res = {
-            "primary": "",
+            "primary": [],
             "accepted": []
         }
         for reading in readings:
-            if reading["primary"]:
-                res["primary"] = reading["reading"]
+            if reading["primary"] and subject["object"] != "kanji":
+                res["primary"].append(reading["reading"])
             if reading["accepted_answer"]:
                 res["accepted"].append(reading["reading"])
             if "type" in reading:
                 if reading["type"] not in res:
                     res[reading["type"]] = []
-                res[reading["type"]].append(reading["reading"])
+                if reading["primary"]:
+                    txt = f'<reading>{reading["reading"]}</reading>'
+                else:
+                    txt = reading["reading"]
+                res[reading["type"]].append(txt)
         return res
 
     def get_components(self, subject, type):
