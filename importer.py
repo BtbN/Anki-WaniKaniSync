@@ -233,7 +233,7 @@ class WKImporter(NoteImporter):
 
         def audio_sort(audio):
             for i in range(0, len(readings)):
-                if readings[i]["reading"] == audio["metadata"]["reading"]:
+                if readings[i]["reading"] == audio["metadata"]["pronunciation"]:
                     return 1000 + (i*1000) + audio["metadata"]["voice_actor_id"]
             return audio["metadata"]["voice_actor_id"]
 
