@@ -419,7 +419,7 @@ if (`{{Card}}` === "Meaning") {
 		correctText.innerHTML += "<br>Alternative: <b>" + alternative.join(", ") + "</b>";
 	}
 	if (accepted.length > 0) {
-		correctText.innerHTML += "<br>Accepted: <b>" + accepted.join(", ") + "</b>";
+		correctText.innerHTML += "<br><details><summary>Accepted:</summary><b>" + accepted.join(", ") + "</b></details>";
 	}
 } else if (`{{Card}}` === "Reading") {
 	correctAnswers = readingWhitelist;
