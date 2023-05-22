@@ -356,8 +356,18 @@ def sort_new_cards(col, deck_name):
     for cid in card_ids:
         card = col.get_card(cid)
         note = card.note()
+
+        tp = note["Card_Type"].lower()
+        tpo = 30
+        if tp == "vocabulary" or tp == "kana vocabulary":
+            tpo = 20
+        elif tp == "kanji":
+            tpo = 10
+        elif tp == "radical":
+            tpo = 0
+
         # The Meaning template has the lowest template index(ord), so add it in to have Meaning-Cards first.
-        sort_keys[cid] = int(note["sort_id"]) * 100 + card.ord
+        sort_keys[cid] = int(note["sort_id"]) * 1000 + tpo + card.ord
 
     card_ids = sorted(card_ids, key=lambda cid: sort_keys[cid])
 
