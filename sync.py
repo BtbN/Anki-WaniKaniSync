@@ -218,6 +218,7 @@ def do_sync_op(col):
     if result.changes.card or result.changes.study_queues:
         report_progress("Sorting deck...", 100, 100)
         sort_new_cards(col, config["DECK_NAME"])
+        result.changes.study_queues = True
 
     mw.addonManager.writeConfig(__name__, config)
 
@@ -255,6 +256,7 @@ def do_convert_wk3_op(col):
     if result.changes.card:
         report_progress("Sorting deck...", 100, 100)
         sort_new_cards(col, config["DECK_NAME"])
+        result.changes.study_queues = True
 
     config["SYNC_ALL"] = True
     config["SYNC_DUE_TIME"] = False
