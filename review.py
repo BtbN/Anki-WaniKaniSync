@@ -77,7 +77,7 @@ def submit_assignment_op(config, col, subject_id):
 
         print(f"Submitted subject {subject_id} review to WaniKani.")
     except ReviewException as e:
-        show_tooltip(str(e), period=5000)
+        print(str(e))
     except Exception as e:
         show_tooltip(
             "Failed submitting review to WaniKani:<br/>" + str(e),
