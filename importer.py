@@ -70,7 +70,7 @@ class WKImporter(NoteImporter):
 
         note.fields = [
             subject["id"],
-            data["level"]*10000 + data["lesson_position"],
+            self.get_sort_id(subject),
             self.get_character(subject),
             subject["object"].replace("_", " ").title(),
             ", ".join(data["parts_of_speech"]) if "parts_of_speech" in data else "",
@@ -111,6 +111,20 @@ class WKImporter(NoteImporter):
         note.fields = [str(f) for f in note.fields]
 
         return note
+
+    def get_sort_id(self, subject):
+        data = subject["data"]
+
+        tp = subject["object"].lower()
+        tpo = 30000
+        if tp == "vocabulary" or tp == "kana_vocabulary":
+            tpo = 20000
+        elif tp == "kanji":
+            tpo = 10000
+        elif tp == "radical":
+            tpo = 0
+
+        return data["level"]*100000 + tpo + data["lesson_position"]
 
     def get_character(self, subject):
         res = subject["data"]["characters"]
