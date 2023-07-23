@@ -141,6 +141,7 @@ class WKImporter(NoteImporter):
         res = []
         for meaning in meanings:
             if meaning["accepted_answer"]:
+                meaning["meaning"] = meaning["meaning"].strip()
                 if meaning["primary"]:
                     res.insert(0, meaning["meaning"])
                 else:
@@ -176,7 +177,7 @@ class WKImporter(NoteImporter):
         res = []
         for item in aux:
             if item["type"] == "whitelist":
-                res.append(item["meaning"])
+                res.append(item["meaning"].strip())
         return res
 
     def get_readings(self, subject):
@@ -186,6 +187,7 @@ class WKImporter(NoteImporter):
             "accepted": []
         }
         for reading in readings:
+            reading["reading"] = reading["reading"].strip()
             if reading["accepted_answer"] and subject["object"] != "kanji":
                 if reading["primary"]:
                     txt = f'<reading>{reading["reading"]}</reading>'
