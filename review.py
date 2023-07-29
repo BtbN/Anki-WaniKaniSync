@@ -152,7 +152,7 @@ def autoreview_op(col):
     for assignment in itertools.chain(assignments_lessons["data"], assignments_reviews["data"]):
         available_assignments[assignment["data"]["subject_id"]] = assignment
 
-    ivl_limit = 21
+    ivl_limit = 14
     note_ids = col.find_notes(f'prop:ivl>={ivl_limit} -is:suspended "deck:{config["DECK_NAME"]}" "note:{config["NOTE_TYPE_NAME"]}"')
     i = 0
     succ = 0
