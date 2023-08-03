@@ -71,7 +71,7 @@ class WKImporter(NoteImporter):
         note.fields = [
             subject["id"],
             self.get_sort_id(subject),
-            self.get_character(subject),
+            f'<a href="{data["document_url"]}">{self.get_character(subject)}</a>',
             subject["object"].replace("_", " ").title(),
             ", ".join(data["parts_of_speech"]) if "parts_of_speech" in data else "",
 
@@ -220,7 +220,9 @@ class WKImporter(NoteImporter):
                 continue
             sub_subj = self.sub_subjects[sub_id]
 
-            chars.append(self.get_character(sub_subj))
+            url = sub_subj["data"]["document_url"]
+            char = self.get_character(sub_subj)
+            chars.append(f'<a href="{url}">{char}</a>')
 
             for meaning in sub_subj["data"]["meanings"]:
                 if meaning["primary"]:

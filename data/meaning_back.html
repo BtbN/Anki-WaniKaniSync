@@ -267,11 +267,11 @@ if ("{{Card_Type}}" === "Vocabulary" || "{{Card_Type}}" == "Kana Vocabulary") {
 <!--SCRIPT: Populate Box Characters (Found in Kanji, Visually Similar Kanji and Kanji Composition).-->
 <script>
 if ("{{Card_Type}}" == "Radical") {
-	var character = "{{Found_in_Characters}}";
+	var character = `{{Found_in_Characters}}`;
 	var characterarray = character.split(", ");
-	var meaning = "{{Found_in_Meaning}}";
+	var meaning = '{{Found_in_Meaning}}';
 	var meaningarray = meaning.split(", ");
-	var reading = "{{Found_in_Reading}}";
+	var reading = '{{Found_in_Reading}}';
 	var readingarray = reading.split(", ");
 
 	if (character.toString().length !== 0) {
@@ -288,11 +288,11 @@ if ("{{Card_Type}}" == "Radical") {
 		}
 	}
 } else if ("{{Card_Type}}" == "Kanji") {
-	var character = "{{Similar_Characters}}";
+	var character = `{{Similar_Characters}}`;
 	var characterarray = character.split(", ");
-	var meaning = "{{Similar_Meaning}}";
+	var meaning = '{{Similar_Meaning}}';
 	var meaningarray = meaning.split(", ");
-	var reading = "{{Similar_Reading}}";
+	var reading = '{{Similar_Reading}}';
 	var readingarray = reading.split(", ");
 
 	if (character.toString().length !== 0) {
@@ -311,9 +311,9 @@ if ("{{Card_Type}}" == "Radical") {
 } else if ("{{Card_Type}}" == "Vocabulary" || "{{Card_Type}}" == "Kana Vocabulary") {
 	var character = `{{Components_Characters}}`;
 	var characterarray = character.split(", ");
-	var meaning = "{{Components_Meaning}}";
+	var meaning = '{{Components_Meaning}}';
 	var meaningarray = meaning.split(", ");
-	var reading = "{{Components_Reading}}";
+	var reading = '{{Components_Reading}}';
 	var readingarray = reading.split(", ");
 
 	if (character.toString().length !== 0) {
@@ -336,7 +336,7 @@ if ("{{Card_Type}}" == "Radical") {
 <script>
 var character = `{{Components_Characters}}`;
 var characterarray = character.split(", ");
-var meaning = "{{Components_Meaning}}";
+var meaning = '{{Components_Meaning}}';
 var meaningarray = meaning.split(", ");
 
 for (var i = 0; i < meaningarray.length; i++){
@@ -357,11 +357,11 @@ for (var i = 0; i < meaningarray.length; i++){
 
 <!--SCRIPT: Add Found in Vocabulary Characters.-->
 <script>
-var character = "{{Found_in_Characters}}";
+var character = `{{Found_in_Characters}}`;
 var characterarray = character.split(", ");
-var meaning = "{{Found_in_Meaning}}";
+var meaning = '{{Found_in_Meaning}}';
 var meaningarray = meaning.split(", ");
-var reading = "{{Found_in_Reading}}";
+var reading = '{{Found_in_Reading}}';
 var readingarray = reading.split(", ");
 
 for (var i = 0; i < characterarray.length; i++){

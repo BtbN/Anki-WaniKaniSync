@@ -185,6 +185,13 @@ vocabulary {
 	background-color: var(--vocab-color);
 }
 
+.radical a, .radical a:link, .radical a:visited,
+  .kanji a, .kanji a:link, .kanji a:visited,
+  .vocabulary a, .vocabulary a:link, .vocabulary a:visited
+{
+    color: var(--font-color-light) !important;
+}
+
 #meanings {
 	font-size: 14px;
 	line-height: 0.5;
@@ -323,6 +330,10 @@ ja {
 	overflow: hidden;
 }
 
+#box-character a, #box-character a:link, #box-character a:visited {
+	color: var(--font-color-light) !important;
+}
+
 #box-meaning {
 	font-size: 14px;
 	margin: 0px -100px 0px -100px;
@@ -337,6 +348,10 @@ radical-combination {
 	padding: 5px 8px;
 	margin: 0px 12px 0px -0px;
 	border-radius: 4px;
+}
+
+radical-combination a, radical-combination a:link, radical-combination a:visited {
+	color: white !important;
 }
 
 #combination {
@@ -378,6 +393,10 @@ radical-combination {
 #found-in-vocabulary-box {
 	display: flex;
 	color: white;
+}
+
+#found-in-vocabulary-box a, #found-in-vocabulary-box a:link, #found-in-vocabulary-box a:visited {
+	color: white !important;
 }
 
 #section-found-in-vocabulary {
