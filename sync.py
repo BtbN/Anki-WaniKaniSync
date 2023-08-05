@@ -32,23 +32,42 @@ def fetch_subjects(config, subject_ids=None, existing_subject_ids=None, max_lvl=
     if not subject_ids:
         subject_ids = [None]
     if not existing_subject_ids:
-        existing_subject_ids = [None]
+        existing_subject_ids = []
+
+    # Just always fetch all user study material.
+    # It's a bit of a chicken/egg problem. We need to make sure to fetch the associated subject
+    # of an updated study material. Likewise we'd need to make sure to fetch the associated
+    # study material if a subject gets updated and the study material did not.
+    # Since there are hopefully not THAT many user study entries, just fetch all of them.
+    # Alternatively, study mats would need to be fetched twice: Once here, and then again at the end for
+    # all fetched subject ids.
+    study_mats = {}
+    study_subj_ids = []
+    for mat in wk_api_req("study_materials?hidden=false")["data"]:
+        study_mats[mat["data"]["subject_id"]] = mat["data"]
+        study_subj_ids.append(mat["data"]["subject_id"])
 
     last_sync = config["_LAST_SUBJECTS_SYNC"]
     config["_LAST_SUBJECTS_SYNC"] = wknow()
 
     subjects = {}
     chunk_size = 1000
-    existing = True
-    for current_ids in [existing_subject_ids, subject_ids]:
-        # Just skip existing subjects if they're empty (there just are none) or if
-        # the subject_ids are empty, meaning we are about to fetch all subjects anyway.
-        if existing and (not existing_subject_ids[0] or not subject_ids[0]):
-            existing = False
+    step = 0
+    for current_ids in [subject_ids, existing_subject_ids, study_subj_ids]:
+        step += 1
+
+        # If we're about to fetch/update all subjects anyway (subject_ids==[None]), skip existing subjects.
+        if step == 2 and not subject_ids[0]:
+            continue
+
+        # If we're really going to fetch all subjects, do no other step
+        if step != 1 and not last_sync and not subject_ids[0]:
             continue
 
         for i in range(0, len(current_ids), chunk_size):
             chunk_ids = current_ids[i:i+chunk_size]
+            if not len(chunk_ids):
+                continue
 
             req = "subjects?levels=" + ",".join([str(i) for i in range(max_lvl + 1)])
             if chunk_ids[0]:
@@ -57,8 +76,8 @@ def fetch_subjects(config, subject_ids=None, existing_subject_ids=None, max_lvl=
             # Include the update-limit if:
             #  - we have a last sync timestamps AND
             #    - we are synching existing subjects in the database OR
-            #    - we are fetching ALL subjects, in which case existing subjects were skipped
-            if last_sync and (existing or not current_ids[0]):
+            #    - we are fetching ALL subjects (in which case existing subjects are skipped)
+            if last_sync and (step == 2 or not current_ids[0]):
                 req += "&updated_after=" + last_sync
 
             report_progress(f"Fetching subjects {i}/{len(current_ids)}...", 0, 0)
@@ -66,11 +85,10 @@ def fetch_subjects(config, subject_ids=None, existing_subject_ids=None, max_lvl=
             sub_subjects = wk_api_req(req)
             for subject in sub_subjects["data"]:
                 subjects[subject["id"]] = subject
-        existing = False
 
     report_progress("Done fetching subjects...", 0, 0)
 
-    return list(subjects.values())
+    return list(subjects.values()), study_mats
 
 
 def fetch_sub_subjects(config, subjects):
@@ -196,7 +214,7 @@ def do_sync_op(col):
         subject_ids = get_available_subject_ids(config)
         existing_subject_ids = get_existing_subject_ids(config)
 
-    subjects = fetch_subjects(config, subject_ids, existing_subject_ids, granted_lvl)
+    subjects, study_mats = fetch_subjects(config, subject_ids, existing_subject_ids, granted_lvl)
     sub_subjects = fetch_sub_subjects(config, subjects)
 
     result = OpChangesWithCount()
@@ -207,7 +225,7 @@ def do_sync_op(col):
         result.changes.deck = True
         result.changes.deck_config = True
 
-    if ensure_notes(col, subjects, sub_subjects, config["NOTE_TYPE_NAME"], config["DECK_NAME"]):
+    if ensure_notes(col, subjects, sub_subjects, study_mats, config["NOTE_TYPE_NAME"], config["DECK_NAME"]):
         result.changes.card = True
         result.changes.note = True
 
@@ -242,14 +260,14 @@ def do_convert_wk3_op(col):
         result.changes.deck_config = True
 
     config["_LAST_SUBJECTS_SYNC"] = ""
-    subjects = fetch_subjects(config, None, None, granted_lvl)
+    subjects, study_mats = fetch_subjects(config, None, None, granted_lvl)
     sub_subjects = fetch_sub_subjects(config, subjects)
 
     result.count = len(subjects)
 
     convert_wk3_notes(col, subjects, config["NOTE_TYPE_NAME"])
 
-    if ensure_notes(col, subjects, sub_subjects, config["NOTE_TYPE_NAME"], config["DECK_NAME"]):
+    if ensure_notes(col, subjects, sub_subjects, study_mats, config["NOTE_TYPE_NAME"], config["DECK_NAME"]):
         result.changes.card = True
         result.changes.note = True
 

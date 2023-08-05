@@ -24,13 +24,14 @@ class WKImporter(NoteImporter):
         "Audio"
     ]
 
-    def __init__(self, collection, model, subjects, sub_subjects):
+    def __init__(self, collection, model, subjects, sub_subjects, study_mats):
         NoteImporter.__init__(self, collection, None)
         self.allowHTML = True
         self.importMode = UPDATE_MODE
         self.model = model
         self.subjects = subjects
         self.sub_subjects = sub_subjects
+        self.study_mats = study_mats
 
         self.session = requests.Session()
         self.limiter = Limiter(RequestRate(100, Duration.MINUTE))
@@ -62,6 +63,8 @@ class WKImporter(NoteImporter):
 
         readings = self.get_readings(subject)
 
+        meaning_synonyms, meaning_note, reading_note = self.get_user_study(subject)
+
         comp_chars, comp_mean, comp_read = self.get_components(subject, "component_subject_ids")
         simi_chars, simi_mean, simi_read = self.get_components(subject, "visually_similar_subject_ids")
         amal_chars, amal_mean, amal_read = self.get_components(subject, "amalgamation_subject_ids")
@@ -76,16 +79,16 @@ class WKImporter(NoteImporter):
             ", ".join(data["parts_of_speech"]) if "parts_of_speech" in data else "",
 
             ", ".join(meanings),
-            self.html_newlines(data.get("meaning_mnemonic", "") or ""),
+            self.html_newlines(((data.get("meaning_mnemonic", "") or "") + meaning_note).strip()),
             self.html_newlines(data.get("meaning_hint", "") or ""),
-            ", ".join(meanings_whl + meanings),
+            ", ".join(meanings_whl + meanings + meaning_synonyms),
 
             ", ".join(readings.get("primary", [])),
             ", ".join(readings.get("onyomi", [])),
             ", ".join(readings.get("kunyomi", [])),
             ", ".join(readings.get("nanori", [])),
             ", ".join(readings.get("accepted", [])),
-            self.html_newlines(data.get("reading_mnemonic", "") or ""),
+            self.html_newlines(((data.get("reading_mnemonic", "") or "") + reading_note).strip()),
             self.html_newlines(data.get("reading_hint", "") or ""),
 
             ", ".join(comp_chars),
@@ -111,6 +114,25 @@ class WKImporter(NoteImporter):
         note.fields = [str(f) for f in note.fields]
 
         return note
+
+    def get_user_study(self, subject):
+        study_mat = self.study_mats.get(subject["id"], None)
+
+        meaning_synonyms = study_mat["meaning_synonyms"] if study_mat else []
+        meaning_note = study_mat["meaning_note"] if study_mat else None
+        reading_note = study_mat["reading_note"] if study_mat else None
+
+        if meaning_note:
+            meaning_note = f"<p class=\"explanation\">User Note</p>{meaning_note}"
+        else:
+            meaning_note = ""
+
+        if reading_note:
+            reading_note = f"<p class=\"explanation\">User Note</p>{reading_note}"
+        else:
+            reading_note = ""
+
+        return meaning_synonyms, meaning_note, reading_note
 
     def get_sort_id(self, subject):
         data = subject["data"]
@@ -412,7 +434,7 @@ def suspend_hidden_notes(col, subjects, note_name):
             col.sched.suspend_notes(note_ids)
 
 
-def ensure_notes(col, subjects, sub_subjects, note_name, deck_name):
+def ensure_notes(col, subjects, sub_subjects, study_mats, note_name, deck_name):
     model = col.models.by_name(note_name)
     if not model:
         raise Exception("Can't ensure non-existant model")
@@ -422,7 +444,7 @@ def ensure_notes(col, subjects, sub_subjects, note_name, deck_name):
 
     col.set_aux_notetype_config(model["id"], "lastDeck", deck_id)
 
-    importer = WKImporter(col, model, subjects, sub_subjects)
+    importer = WKImporter(col, model, subjects, sub_subjects, study_mats)
     importer.initMapping()
     importer.run()
 
