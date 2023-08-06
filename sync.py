@@ -61,7 +61,7 @@ def fetch_subjects(config, subject_ids=None, existing_subject_ids=None, max_lvl=
     for current_ids in [subject_ids, existing_subject_ids, list(study_subj_ids)]:
         step += 1
 
-        # If we're about to fetch/update all subjects anyway (subject_ids==[None]), skip existing subjects.
+        # If we're about to fetch/update all subjects anyway (subject_ids[0]==None), skip existing subjects.
         if step == 2 and not subject_ids[0]:
             continue
 
@@ -95,14 +95,14 @@ def fetch_subjects(config, subject_ids=None, existing_subject_ids=None, max_lvl=
     # If we did not sync for the first time, we need to fetch study materials again
     if last_sync:
         # Construct a set of all subjects we fetched, minus the ones of the study mats we already fetched.
-        new_study_mad_subjs = set(subject_ids)
-        new_study_mad_subjs.update(existing_subject_ids)
-        new_study_mad_subjs.remove(None)
-        new_study_mad_subjs -= study_subj_ids
-        new_study_mad_subjs = list(new_study_mad_subjs)
+        new_study_mat_subjs = set(subject_ids)
+        new_study_mat_subjs.update(existing_subject_ids)
+        new_study_mat_subjs.remove(None)
+        new_study_mat_subjs -= study_subj_ids
+        new_study_mat_subjs = list(new_study_mat_subjs)
 
-        for i in range(0, len(new_study_mad_subjs), chunk_size):
-            chunk_ids = new_study_mad_subjs[i:i+chunk_size]
+        for i in range(0, len(new_study_mat_subjs), chunk_size):
+            chunk_ids = new_study_mat_subjs[i:i+chunk_size]
 
             req = "study_materials?hidden=false&subject_ids=" + ",".join(str(id) for id in chunk_ids)
             for mat in wk_api_req(req)["data"]:
