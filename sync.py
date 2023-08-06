@@ -93,6 +93,7 @@ def fetch_subjects(config, subject_ids=None, existing_subject_ids=None, max_lvl=
                 subjects[subject["id"]] = subject
 
     # If we did not sync for the first time, we need to fetch study materials again
+    # Subjects might have gotten updated, but the study mat did not.
     if last_sync:
         # Construct a set of all subjects we fetched, minus the ones of the study mats we already fetched.
         new_study_mat_subjs = set(subject_ids)
