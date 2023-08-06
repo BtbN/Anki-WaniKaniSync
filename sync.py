@@ -38,7 +38,7 @@ def fetch_subjects(config, subject_ids=None, existing_subject_ids=None, max_lvl=
     config["_LAST_SUBJECTS_SYNC"] = wknow()
 
     study_mats = {}
-    study_subj_ids = []
+    study_subj_ids = set()
 
     req = "study_materials?hidden=false"
     if last_sync:
@@ -48,10 +48,17 @@ def fetch_subjects(config, subject_ids=None, existing_subject_ids=None, max_lvl=
         study_mats[mat["data"]["subject_id"]] = mat["data"]
         study_subj_ids.append(mat["data"]["subject_id"])
 
+    # We don't want to fetch subjects we wouldn't fetch already anyway, so if we're not fetching
+    # all subjects (subject_ids[0] != None), only keep study mat subjects if they're in either of the two other lists.
+    if subject_ids[0]:
+        sub1 = study_subj_ids.intersection(set(subject_ids))
+        sub2 = study_subj_ids.intersection(set(existing_subject_ids))
+        study_subj_ids = sub1.union(sub2)
+
     subjects = {}
     chunk_size = 1000
     step = 0
-    for current_ids in [subject_ids, existing_subject_ids, study_subj_ids]:
+    for current_ids in [subject_ids, existing_subject_ids, list(study_subj_ids)]:
         step += 1
 
         # If we're about to fetch/update all subjects anyway (subject_ids==[None]), skip existing subjects.
@@ -73,9 +80,10 @@ def fetch_subjects(config, subject_ids=None, existing_subject_ids=None, max_lvl=
 
             # Include the update-limit if:
             #  - we have a last sync timestamps AND
+            #  - we are not fetching force-update study-material subjects AND
             #    - we are synching existing subjects in the database OR
             #    - we are fetching ALL subjects (in which case existing subjects are skipped)
-            if last_sync and (step == 2 or not current_ids[0]):
+            if last_sync and step != 3 and (step == 2 or not current_ids[0]):
                 req += "&updated_after=" + last_sync
 
             report_progress(f"Fetching subjects {i}/{len(current_ids)}...", 0, 0)
@@ -90,7 +98,7 @@ def fetch_subjects(config, subject_ids=None, existing_subject_ids=None, max_lvl=
         new_study_mad_subjs = set(subject_ids)
         new_study_mad_subjs.update(existing_subject_ids)
         new_study_mad_subjs.remove(None)
-        new_study_mad_subjs -= set(study_subj_ids)
+        new_study_mad_subjs -= study_subj_ids
         new_study_mad_subjs = list(new_study_mad_subjs)
 
         for i in range(0, len(new_study_mad_subjs), chunk_size):
