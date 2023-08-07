@@ -578,3 +578,32 @@ radical-combination a, radical-combination a:link, radical-combination a:visited
 .mobile #correct reading {
 	font-size: 24px;
 }
+
+.mora {
+  display: inline-block;
+  margin-bottom: 0.2em;
+}
+
+.mora > * {
+  margin: 0;
+  border: 0 dotted currentcolor;
+  --border-width: 1.5px;
+}
+
+.mora > .mora-h-l {
+  border-top-width: var(--border-width);
+  border-right-width: var(--border-width);
+}
+
+.mora > .mora-l-h {
+  border-bottom-width: var(--border-width);
+  border-right-width: var(--border-width);
+}
+
+.mora > .mora-h {
+  border-top-width: var(--border-width);
+}
+
+.mora > .mora-l {
+  border-bottom-width: var(--border-width);
+}
