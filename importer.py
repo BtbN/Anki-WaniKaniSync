@@ -272,11 +272,9 @@ class WKImporter(NoteImporter):
         else:
             mid = "".join(mora[1:accent])
             end = "".join(mora[accent:])
-            res = f'<span class="mora-l-h">{mora[0]}</span>'
+            res = f'<span class="mora-l-h">{mora[0]}</span><span class="mora-h-l">{mid}</span>'
             if end:
-                res += f'<span class="mora-h-l">{mid}</span><span class="mora-l">{end}</span>'
-            else:
-                res += f'<span class="mora-h">{mid}</span>'
+                res += f'<span class="mora-l">{end}</span>'
 
         return f'<span class="mora">{res}</span>'
 
