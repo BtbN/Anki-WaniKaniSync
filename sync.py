@@ -46,7 +46,7 @@ def fetch_subjects(config, subject_ids=None, existing_subject_ids=None, max_lvl=
 
     for mat in wk_api_req(req)["data"]:
         study_mats[mat["data"]["subject_id"]] = mat["data"]
-        study_subj_ids.append(mat["data"]["subject_id"])
+        study_subj_ids.add(mat["data"]["subject_id"])
 
     # We don't want to fetch subjects we wouldn't fetch already anyway, so if we're not fetching
     # all subjects (subject_ids[0] != None), only keep study mat subjects if they're in either of the two other lists.
