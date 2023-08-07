@@ -429,6 +429,9 @@ if (`{{Card}}` === "Meaning") {
 }
 
 if (typedAnswerLower != "") {
+	// answer can contain HTML tags, filter them
+	correctAnswers = correctAnswers.map(a => a.replace(/<\/?[^>]+?(>|$)/g, ""));
+
 	var answerDiv = document.createElement("div");
 	answerDiv.setAttribute("id", "typeans");
 	answerDiv.innerHTML = typedAnswer;
