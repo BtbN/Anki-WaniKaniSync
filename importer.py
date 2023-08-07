@@ -54,9 +54,22 @@ class WKImporter(NoteImporter):
             with lzma.open(fc, mode="rt", encoding="utf-8", newline='') as f:
                 reader = csv.reader(f, delimiter=",")
                 for row in reader:
-                    if row[0] not in res:
-                        res[row[0]] = {}
-                    res[row[0]][row[1]] = row[2]
+                    orths = row[0].split("|")
+
+                    hiras = row[1].split("|")
+                    accents = [int(r) for r in row[2].split("|")]
+                    if len(hiras) != len(accents):
+                        raise Exception("Invalid accent data")
+
+                    data = zip(hiras, accents)
+                    hira = "".join(hiras)
+
+                    for orth in orths:
+                        id = f"{orth}|{hira}"
+                        if id in res:
+                            continue
+                        res[id] = data
+
         return res
 
     def foreignNotes(self):
@@ -245,24 +258,8 @@ class WKImporter(NoteImporter):
                 res[reading["type"]].append(txt)
         return res
 
-    def apply_pitch_pattern(self, subject, reading):
-        chars = subject["data"]["characters"]
-        if chars not in self.pitch_data:
-            return reading
-
-        reading_data = self.pitch_data[chars]
-        if reading not in reading_data:
-            return reading
-
-        accent = reading_data[reading]
-        if not accent.isdigit():
-            # Some accents are special, like multi-word stuff: https://www.wadoku.de/entry/view/7569824
-            # We don't support those (yet?), just return.
-            return reading
-
-        accent = int(accent)
+    def apply_pitch_internal(self, reading, accent):
         mora = re.findall(r".[ょゃゅョャュ]?", reading)
-
         if accent <= 0:
             end = "".join(mora[1:])
             res = f'<span class="mora-l-h">{mora[0]}</span><span class="mora-h">{end}</span>'
@@ -275,6 +272,16 @@ class WKImporter(NoteImporter):
             res = f'<span class="mora-l-h">{mora[0]}</span><span class="mora-h-l">{mid}</span>'
             if end:
                 res += f'<span class="mora-l">{end}</span>'
+        return res
+
+    def apply_pitch_pattern(self, subject, reading):
+        id = subject["data"]["characters"] + "|" + reading
+        if id not in self.pitch_data:
+            return reading
+
+        res = ""
+        for part in self.pitch_data[id]:
+            res += self.apply_pitch_internal(part[0], part[1])
 
         return f'<span class="mora">{res}</span>'
 
