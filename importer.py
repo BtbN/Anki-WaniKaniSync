@@ -275,6 +275,9 @@ class WKImporter(NoteImporter):
         return res
 
     def apply_pitch_pattern(self, subject, reading):
+        if subject["object"] == "radical" or subject["object"] == "kanji":
+            return reading
+
         id = subject["data"]["characters"] + "|" + reading
         if id not in self.pitch_data:
             return reading
@@ -311,7 +314,7 @@ class WKImporter(NoteImporter):
             if "readings" in sub_subj["data"]:
                 for reading in sub_subj["data"]["readings"]:
                     if reading["primary"]:
-                        read.append(self.apply_pitch_pattern(sub_subj, reading["reading"]))
+                        read.append(self.apply_pitch_pattern(sub_subj, reading["reading"].strip()))
                         break
             else:
                 read.append("")
