@@ -3,7 +3,10 @@ from aqt import mw
 
 import pathlib, shutil
 import requests
+import lzma
 import html
+import csv
+import re
 from urllib.parse import unquote
 
 from pyrate_limiter import Duration, RequestRate, Limiter
@@ -36,11 +39,25 @@ class WKImporter(NoteImporter):
         self.session = requests.Session()
         self.limiter = Limiter(RequestRate(100, Duration.MINUTE))
 
+        self.pitch_data = self.load_pitch_data()
+
         config = mw.addonManager.getConfig(__name__)
         self.fetch_patterns = config["FETCH_CONTEXT_PATTERNS"]
 
     def fields(self):
         return len(self.FIELDS) + 1 # Final unnamed field is the _tags one
+
+    def load_pitch_data(self):
+        pitchfile = pathlib.Path(__file__).parent.resolve() / "pitch" / "accent_data.csv.xz"
+        res = {}
+        with pitchfile.open("rb") as fc:
+            with lzma.open(fc, mode="rt", encoding="utf-8", newline='') as f:
+                reader = csv.reader(f, delimiter=",")
+                for row in reader:
+                    if row[0] not in res:
+                        res[row[0]] = {}
+                    res[row[0]][row[1]] = row[2]
+        return res
 
     def foreignNotes(self):
         res = []
@@ -209,24 +226,59 @@ class WKImporter(NoteImporter):
             "accepted": []
         }
         for reading in readings:
-            reading["reading"] = reading["reading"].strip()
+            cur_reading = self.apply_pitch_pattern(subject, reading["reading"].strip())
             if reading["accepted_answer"] and subject["object"] != "kanji":
                 if reading["primary"]:
-                    txt = f'<reading>{reading["reading"]}</reading>'
+                    txt = f'<reading>{cur_reading}</reading>'
                 else:
-                    txt = reading["reading"]
+                    txt = cur_reading
                 res["primary"].append(txt)
             if reading["accepted_answer"]:
-                res["accepted"].append(reading["reading"])
+                res["accepted"].append(cur_reading)
             if "type" in reading:
                 if reading["type"] not in res:
                     res[reading["type"]] = []
                 if reading["primary"]:
-                    txt = f'<reading>{reading["reading"]}</reading>'
+                    txt = f'<reading>{cur_reading}</reading>'
                 else:
-                    txt = reading["reading"]
+                    txt = cur_reading
                 res[reading["type"]].append(txt)
         return res
+
+    def apply_pitch_pattern(self, subject, reading):
+        chars = subject["data"]["characters"]
+        if chars not in self.pitch_data:
+            return reading
+
+        reading_data = self.pitch_data[chars]
+        if reading not in reading_data:
+            return reading
+
+        accent = reading_data[reading]
+        if not accent.isdigit():
+            # Some accents are special, like multi-word stuff: https://www.wadoku.de/entry/view/7569824
+            # We don't support those (yet?), just return.
+            return reading
+
+        accent = int(accent)
+        mora = re.findall(r".[ょゃゅョャュ]?", reading)
+
+        if accent <= 0:
+            end = "".join(mora[1:])
+            res = f'<span class="mora-l-h">{mora[0]}</span><span class="mora-h">{end}</span>'
+        elif accent == 1:
+            end = "".join(mora[1:])
+            res = f'<span class="mora-h-l">{mora[0]}</span><span class="mora-l">{end}</span>'
+        else:
+            mid = "".join(mora[1:accent])
+            end = "".join(mora[accent:])
+            res = f'<span class="mora-l-h">{mora[0]}</span>'
+            if end:
+                res += f'<span class="mora-h-l">{mid}</span><span class="mora-l">{end}</span>'
+            else:
+                res += f'<span class="mora-h">{mid}</span>'
+
+        return f'<span class="mora">{res}</span>'
 
     def get_components(self, subject, type):
         if type not in subject["data"]:
@@ -254,7 +306,7 @@ class WKImporter(NoteImporter):
             if "readings" in sub_subj["data"]:
                 for reading in sub_subj["data"]["readings"]:
                     if reading["primary"]:
-                        read.append(reading["reading"])
+                        read.append(self.apply_pitch_pattern(sub_subj, reading["reading"]))
                         break
             else:
                 read.append("")
