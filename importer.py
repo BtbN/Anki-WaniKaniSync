@@ -58,10 +58,10 @@ class WKImporter(NoteImporter):
 
                     hiras = row[1].split("|")
                     accents = [int(r) for r in row[2].split("|")]
-                    if len(hiras) != len(accents):
+                    if len(hiras) != len(accents) or len(accents) == 0:
                         raise Exception("Invalid accent data")
 
-                    data = zip(hiras, accents)
+                    data = list(zip(hiras, accents))
                     hira = "".join(hiras)
 
                     for orth in orths:
@@ -285,6 +285,9 @@ class WKImporter(NoteImporter):
         res = ""
         for part in self.pitch_data[id]:
             res += self.apply_pitch_internal(part[0], part[1])
+
+        if not res:
+            raise Exception(html.escape(f'Invalid pitch output for {id}: {repr(self.pitch_data[id])}'))
 
         return f'<span class="mora">{res}</span>'
 
