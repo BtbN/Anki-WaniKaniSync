@@ -62,10 +62,16 @@ class WKImporter(NoteImporter):
                         raise Exception("Invalid accent data")
 
                     data = list(zip(hiras, accents))
-                    hira = "".join(hiras)
+                    full_hira = "".join(hiras)
 
                     for orth in orths:
-                        id = f"{orth}|{hira}"
+                        for d in data:
+                            id = f"{orth}|{d[0]}"
+                            if id in res:
+                                continue
+                            res[id] = [d]
+
+                        id = f"{orth}|{full_hira}"
                         if id in res:
                             continue
                         res[id] = data
