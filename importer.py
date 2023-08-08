@@ -207,15 +207,14 @@ class WKImporter(NoteImporter):
         return res
 
     def get_context_patterns(self, subject):
-        url = subject["data"]["document_url"]
-        res = "Online; See on Website; <a href=\"" + url + "\">" + unquote(url) + "</a>"
+        res = ""
 
         if not self.fetch_patterns or subject["object"] == "radical" or subject["object"] == "kanji":
             return res
 
         try:
             with self.limiter.ratelimit("wk_import", delay=True):
-                req = self.session.get(url)
+                req = self.session.get(subject["data"]["document_url"])
             req.raise_for_status()
 
             parser = WKContextParser()
@@ -228,7 +227,7 @@ class WKImporter(NoteImporter):
         except Exception as e:
             print("Failed parsing context: " + repr(e))
 
-        return res
+        return res.strip("|")
 
     def get_meanings_whl(self, subject):
         aux = subject["data"]["auxiliary_meanings"]
