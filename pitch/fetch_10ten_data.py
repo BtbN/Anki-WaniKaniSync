@@ -12,8 +12,6 @@ minor = version_info["words"][major]["minor"]
 patch = version_info["words"][major]["patch"]
 parts = version_info["words"][major]["parts"]
 
-words = set()
-
 # format from: https://github.com/birchill/jpdict-idb/blob/main/src/words.ts
 for part in range(1, parts + 1):
     res = s.get(f"https://data.10ten.study/jpdict/reader/words/en/{major}.{minor}.{patch}-{part}.jsonl")
