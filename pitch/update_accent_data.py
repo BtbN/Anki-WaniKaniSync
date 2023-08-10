@@ -138,7 +138,11 @@ def print_data(data):
             comb_data[hira_slug] = []
         comb_data[hira_slug].append(orth)
     for hira_slug, orths in comb_data.items():
-        print(f'"{"|".join(orths)}",{hira_slug}')
+        orths_slug = "|".join(orths)
+        if "," in orths_slug:
+            print(f'"{orths_slug}",{hira_slug}')
+        else:
+            print(f'{orths_slug},{hira_slug}')
 
 if __name__ == "__main__":
     print("Fetching 10ten...", file=sys.stderr)
