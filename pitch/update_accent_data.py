@@ -129,8 +129,16 @@ def combine_data(data1, data2):
     return res
 
 def print_data(data):
+    comb_data = dict()
     for orth, hiras in data.items():
-        print(f'"{orth}","{"|".join(hiras.keys())}",{"|".join(hiras.values())}')
+        if "|" in orth:
+            raise Exception(f"Invalid character in orth {orth}")
+        hira_slug = f'{"|".join(hiras.keys())},{"|".join(hiras.values())}'
+        if hira_slug not in comb_data:
+            comb_data[hira_slug] = []
+        comb_data[hira_slug].append(orth)
+    for hira_slug, orths in comb_data.items():
+        print(f'"{"|".join(orths)}",{hira_slug}')
 
 if __name__ == "__main__":
     print("Fetching 10ten...", file=sys.stderr)
