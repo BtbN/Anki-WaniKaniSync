@@ -56,25 +56,20 @@ class WKImporter(NoteImporter):
                 for row in reader:
                     orths = row[0].split("|")
 
-                    hiras = row[1].split("|")
-                    accents = [int(r) for r in row[2].split("|")]
+                    hiras = [h.split("-") for h in row[1].split("|")]
+                    accents = [[int(ia) for ia in a.split("-")] for a in row[2].split("|")]
                     if len(hiras) != len(accents) or len(accents) == 0:
                         raise Exception("Invalid accent data")
 
                     data = list(zip(hiras, accents))
-                    full_hira = "".join(hiras)
 
                     for orth in orths:
                         for d in data:
-                            id = f"{orth}|{d[0]}"
-                            if id in res:
-                                continue
-                            res[id] = [d]
-
-                        id = f"{orth}|{full_hira}"
-                        if id in res:
-                            continue
-                        res[id] = data
+                            id = f'{orth}|{"".join(d[0])}'
+                            if len(d[0]) != len(d[1]):
+                                raise Exception("Invalid accent sub-data")
+                            if id not in res:
+                                res[id] = list(zip(d[0], d[1]))
 
         return res
 
