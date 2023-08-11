@@ -446,7 +446,7 @@ if (typedAnswerLower != "") {
 
 	if (typedAnswerLower === "") {
 		answerDiv.style.display = "none";
-  } else if (typedAnswerLower.split(/[、,]\s*/).every(v => correctAnswers.includes(v))) {
+	} else if (typedAnswerLower.split(/[、,]\s*/).every(v => correctAnswers.includes(v))) {
 		answerDiv.classList.add("correct");
 	} else {
 		answerDiv.classList.add("incorrect");
