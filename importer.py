@@ -2,7 +2,6 @@ from anki.importing.noteimp import NoteImporter, ForeignNote, UPDATE_MODE
 from aqt import mw
 
 import pathlib, shutil
-import requests
 import lzma
 import html
 import csv
@@ -13,6 +12,7 @@ from pyrate_limiter import Duration, RequestRate, Limiter
 
 from .utils import report_progress, show_tooltip
 from .wk_ctx_parser import WKContextParser
+from .wk_api import session as wk_session
 
 
 class WKImporter(NoteImporter):
@@ -36,7 +36,7 @@ class WKImporter(NoteImporter):
         self.sub_subjects = sub_subjects
         self.study_mats = study_mats
 
-        self.session = requests.Session()
+        self.session = wk_session
         self.limiter = Limiter(RequestRate(100, Duration.MINUTE))
 
         self.pitch_data = self.load_pitch_data()

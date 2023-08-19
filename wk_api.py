@@ -1,6 +1,7 @@
 from aqt import mw
 
 from pyrate_limiter import Duration, RequestRate, Limiter
+from requests.adapters import HTTPAdapter, Retry
 import requests
 
 
@@ -9,6 +10,8 @@ WK_REV="20170710"
 
 limiter = Limiter(RequestRate(50, Duration.MINUTE))
 
+session = requests.Session()
+session.mount("https://", HTTPAdapter(max_retries=Retry(total=5, backoff_factor=0.5)))
 
 def wk_api_req(ep, full=True, data=None, put=False):
     config = mw.addonManager.getConfig(__name__)
@@ -24,11 +27,11 @@ def wk_api_req(ep, full=True, data=None, put=False):
     with limiter.ratelimit(api_key, delay=True):
         if data is not None:
             if put:
-                res = requests.put(f"{WK_API_BASE}/{ep}", headers=headers, json=data)
+                res = session.put(f"{WK_API_BASE}/{ep}", headers=headers, json=data)
             else:
-                res = requests.post(f"{WK_API_BASE}/{ep}", headers=headers, json=data)
+                res = session.post(f"{WK_API_BASE}/{ep}", headers=headers, json=data)
         else:
-            res = requests.get(f"{WK_API_BASE}/{ep}", headers=headers)
+            res = session.get(f"{WK_API_BASE}/{ep}", headers=headers)
     res.raise_for_status()
     data = res.json()
 
@@ -36,7 +39,7 @@ def wk_api_req(ep, full=True, data=None, put=False):
         next_url = data["pages"]["next_url"]
         while next_url:
             with limiter.ratelimit(api_key, delay=True):
-                res = requests.get(next_url, headers=headers)
+                res = session.get(next_url, headers=headers)
             res.raise_for_status()
             new_data = res.json()
 
