@@ -260,6 +260,9 @@ class WKImporter(NoteImporter):
                 else:
                     txt = cur_reading
                 res[reading["type"]].append(txt)
+        if subject["object"] == "kana_vocabulary":
+            cur_reading = self.apply_pitch_pattern(subject, subject["data"]["characters"].strip())
+            res["primary"].append(f"<reading>{cur_reading}</reading>")
         return res
 
     def apply_pitch_internal(self, reading, accent):
@@ -282,7 +285,7 @@ class WKImporter(NoteImporter):
         if subject["object"] == "radical" or subject["object"] == "kanji":
             return reading
 
-        id = subject["data"]["characters"] + "|" + reading
+        id = subject["data"]["characters"].strip() + "|" + reading
         if id not in self.pitch_data:
             return reading
 
