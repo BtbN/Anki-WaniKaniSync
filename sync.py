@@ -28,6 +28,36 @@ def get_existing_subject_ids(config):
     return [mw.col.get_note(nid)["card_id"] for nid in existing_note_ids]
 
 
+def fetch_subjects_internal(id_str, current_ids=None, last_sync=None, max_lvl=3):
+    if not current_ids:
+        current_ids = []
+
+    subjects = {}
+
+    chunk_size = 1000
+    for i in range(0, len(current_ids), chunk_size):
+        chunk_ids = current_ids[i:i+chunk_size]
+        if not len(chunk_ids):
+            continue
+
+        req = "subjects?levels=" + ",".join([str(i) for i in range(max_lvl + 1)])
+
+        # Special case: [None] -> fetch all subjects
+        if chunk_ids[0]:
+            req += "&ids=" + ",".join(str(id) for id in chunk_ids)
+
+        if last_sync:
+            req += "&updated_after=" + last_sync
+
+        report_progress(f"Fetching {id_str} subjects {i}/{len(current_ids)}...", 0, 0)
+
+        sub_subjects = wk_api_req(req)
+        for subject in sub_subjects["data"]:
+            subjects[subject["id"]] = subject
+
+    return subjects
+
+
 def fetch_subjects(config, subject_ids=None, existing_subject_ids=None, max_lvl=3):
     if not subject_ids:
         subject_ids = [None]
@@ -44,7 +74,8 @@ def fetch_subjects(config, subject_ids=None, existing_subject_ids=None, max_lvl=
     if last_sync:
         req += "&updated_after=" + last_sync
 
-    for mat in wk_api_req(req)["data"]:
+    study_mata = wk_api_req(req)
+    for mat in study_mata["data"]:
         study_mats[mat["data"]["subject_id"]] = mat["data"]
         study_subj_ids.add(mat["data"]["subject_id"])
 
@@ -55,42 +86,14 @@ def fetch_subjects(config, subject_ids=None, existing_subject_ids=None, max_lvl=
         sub2 = study_subj_ids.intersection(set(existing_subject_ids))
         study_subj_ids = sub1.union(sub2)
 
-    subjects = {}
-    chunk_size = 1000
-    step = 0
-    for current_ids in [subject_ids, existing_subject_ids, list(study_subj_ids)]:
-        step += 1
+    subjects = fetch_subjects_internal("Main", subject_ids, last_sync, max_lvl)
 
-        # If we're about to fetch/update all subjects anyway (subject_ids[0]==None), skip existing subjects.
-        if step == 2 and not subject_ids[0]:
-            continue
-
-        # If we're really going to fetch all subjects, do no other step
-        if step != 1 and not last_sync and not subject_ids[0]:
-            continue
-
-        for i in range(0, len(current_ids), chunk_size):
-            chunk_ids = current_ids[i:i+chunk_size]
-            if not len(chunk_ids):
-                continue
-
-            req = "subjects?levels=" + ",".join([str(i) for i in range(max_lvl + 1)])
-            if chunk_ids[0]:
-                req += "&ids=" + ",".join(str(id) for id in chunk_ids)
-
-            # Include the update-limit if:
-            #  - we have a last sync timestamps AND
-            #  - we are not fetching force-update study-material subjects AND
-            #    - we are synching existing subjects in the database OR
-            #    - we are fetching ALL subjects (in which case existing subjects are skipped)
-            if last_sync and step != 3 and (step == 2 or not current_ids[0]):
-                req += "&updated_after=" + last_sync
-
-            report_progress(f"Fetching subjects {i}/{len(current_ids)}...", 0, 0)
-
-            sub_subjects = wk_api_req(req)
-            for subject in sub_subjects["data"]:
-                subjects[subject["id"]] = subject
+    # If the previous fetch did not already fetch _all_ subjects anyway, fetch more specific ones:
+    if last_sync or subject_ids[0]:
+        existing_subjects = fetch_subjects_internal("Existing", existing_subject_ids, last_sync, max_lvl)
+        study_mat_subjects = fetch_subjects_internal("Custom Study", list(study_subj_ids), None, max_lvl)
+        subjects.update(existing_subjects)
+        subjects.update(study_mat_subjects)
 
     # If we did not sync for the first time, we need to fetch study materials again
     # Subjects might have gotten updated, but the study mat did not.
@@ -102,6 +105,7 @@ def fetch_subjects(config, subject_ids=None, existing_subject_ids=None, max_lvl=
         new_study_mat_subjs -= study_subj_ids
         new_study_mat_subjs = list(new_study_mat_subjs)
 
+        chunk_size=1000
         for i in range(0, len(new_study_mat_subjs), chunk_size):
             chunk_ids = new_study_mat_subjs[i:i+chunk_size]
 
