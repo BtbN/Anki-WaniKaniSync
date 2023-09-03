@@ -41,7 +41,7 @@ Sections get turned off based on which Card Type is displayed.
 <!--For: Kanji, Vocabulary-->
 
 <div id=section-reading>
-  <details>
+  <details id=section-reading-details>
 	<summary>Reading<hr></summary>
 	<div id=vocabulary-reading>{{Reading}}</div>
 	<div id=kanji-readings>
@@ -52,7 +52,9 @@ Sections get turned off based on which Card Type is displayed.
 		</div>
 	</div>
 	<div id="reading-audios">{{Audio}}</div>
+{{#Reading_Mnemonic}}
 	<p class="explanation">Explanation</p>
+{{/Reading_Mnemonic}}
 	<div class="mnemonic">{{Reading_Mnemonic}}</div>
 	<div id="reading-hint">
 		<div class="mnemonic-hint">
@@ -101,6 +103,13 @@ Sections get turned off based on which Card Type is displayed.
 <script>
 var level = `{{Tags}}`.match(/Lesson_(\d+)/)[1];
 document.getElementById("level").innerHTML = level;
+</script>
+
+<!-- Kana Vocab Special-Cases -->
+<script>
+if ("{{Card_Type}}" == "Kana Vocabulary") {
+	document.getElementById("section-reading-details").setAttribute('open',true);
+}
 </script>
 
 <!--SCRIPT: Slice meanings and insert into the Meaning Section.-->
