@@ -42,7 +42,7 @@ def fetch_subjects_internal(id_str, current_ids=None, last_sync=None, max_lvl=3)
 
         req = "subjects?levels=" + ",".join([str(i) for i in range(max_lvl + 1)])
 
-        # Special case: [None] -> fetch all subjects
+        # Special case: [None] -> fetch all
         if chunk_ids[0]:
             req += "&ids=" + ",".join(str(id) for id in chunk_ids)
 
@@ -58,6 +58,33 @@ def fetch_subjects_internal(id_str, current_ids=None, last_sync=None, max_lvl=3)
     return subjects
 
 
+def fetch_study_mats_internal(subject_ids=None, last_sync=None):
+    if not subject_ids:
+        subject_ids = [None]
+
+    req = "study_materials?hidden=false"
+    if last_sync:
+        req += "&updated_after=" + last_sync
+
+    study_mats = {}
+    chunk_size=1000
+    for i in range(0, len(subject_ids), chunk_size):
+        chunk_ids = subject_ids[i:i+chunk_size]
+
+        sub_req = req
+
+        # Special case: [None] -> fetch all
+        if chunk_ids[0]:
+            sub_req += "&subject_ids=" + ",".join(str(id) for id in chunk_ids)
+
+        report_progress(f"Fetching study materials {i}/{len(subject_ids)}...", 0, 0)
+
+        for mat in wk_api_req(sub_req)["data"]:
+            study_mats[mat["data"]["subject_id"]] = mat["data"]
+
+    return study_mats
+
+
 def fetch_subjects(config, subject_ids=None, existing_subject_ids=None, max_lvl=3):
     if not subject_ids:
         subject_ids = [None]
@@ -67,36 +94,30 @@ def fetch_subjects(config, subject_ids=None, existing_subject_ids=None, max_lvl=
     last_sync = config["_LAST_SUBJECTS_SYNC"]
     config["_LAST_SUBJECTS_SYNC"] = wknow()
 
-    study_mats = {}
-    study_subj_ids = set()
+    subjects = fetch_subjects_internal("Main", subject_ids, last_sync, max_lvl)
+    study_mats = fetch_study_mats_internal(last_sync=last_sync)
+    study_subj_ids = set(study_mats.keys())
 
-    req = "study_materials?hidden=false"
-    if last_sync:
-        req += "&updated_after=" + last_sync
-
-    study_mata = wk_api_req(req)
-    for mat in study_mata["data"]:
-        study_mats[mat["data"]["subject_id"]] = mat["data"]
-        study_subj_ids.add(mat["data"]["subject_id"])
-
-    # We don't want to fetch subjects we wouldn't fetch already anyway, so if we're not fetching
+    # We don't want to fetch subjects we wouldn't fetch already, so if we're not fetching
     # all subjects (subject_ids[0] != None), only keep study mat subjects if they're in either of the two other lists.
     if subject_ids[0]:
         sub1 = study_subj_ids.intersection(set(subject_ids))
         sub2 = study_subj_ids.intersection(set(existing_subject_ids))
         study_subj_ids = sub1.union(sub2)
 
-    subjects = fetch_subjects_internal("Main", subject_ids, last_sync, max_lvl)
-
-    # If the previous fetch did not already fetch _all_ subjects anyway, fetch more specific ones:
-    if last_sync or subject_ids[0]:
+    # If the previous fetch did not already fetch all subjects anyway, fetch more specific ones.
+    if subject_ids[0]:
         existing_subjects = fetch_subjects_internal("Existing", existing_subject_ids, last_sync, max_lvl)
-        study_mat_subjects = fetch_subjects_internal("Custom Study", list(study_subj_ids), None, max_lvl)
         subjects.update(existing_subjects)
+
+    # If the main fetch did not fetch absolutely _all_ subjects, fetch the ones that had study material updates.
+    if last_sync or subject_ids[0]:
+        # Only updated or new study material subject ids are in this list, do not apply last_sync.
+        study_mat_subjects = fetch_subjects_internal("Custom Study", list(study_subj_ids), None, max_lvl)
         subjects.update(study_mat_subjects)
 
-    # If we did not sync for the first time, we need to fetch study materials again
-    # Subjects might have gotten updated, but the study mat did not.
+    # If we did not sync for the first time, we need to fetch study materials again.
+    # Subjects might have gotten updated, where the corresponding study material did not.
     if last_sync:
         # Construct a set of all subjects we fetched, minus the ones of the study mats we already fetched.
         new_study_mat_subjs = set(subject_ids)
@@ -105,13 +126,7 @@ def fetch_subjects(config, subject_ids=None, existing_subject_ids=None, max_lvl=
         new_study_mat_subjs -= study_subj_ids
         new_study_mat_subjs = list(new_study_mat_subjs)
 
-        chunk_size=1000
-        for i in range(0, len(new_study_mat_subjs), chunk_size):
-            chunk_ids = new_study_mat_subjs[i:i+chunk_size]
-
-            req = "study_materials?hidden=false&subject_ids=" + ",".join(str(id) for id in chunk_ids)
-            for mat in wk_api_req(req)["data"]:
-                study_mats[mat["data"]["subject_id"]] = mat["data"]
+        study_mats.update(fetch_study_mats_internal(new_study_mat_subjs))
 
     report_progress("Done fetching subjects...", 0, 0)
 
