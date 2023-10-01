@@ -122,17 +122,17 @@ class WKImporter(NoteImporter):
             self.html_newlines(((data.get("reading_mnemonic", "") or "") + reading_note).strip()),
             self.html_newlines(data.get("reading_hint", "") or ""),
 
-            ", ".join(comp_chars),
-            ", ".join(comp_mean),
-            ", ".join(comp_read),
+            "、 ".join(comp_chars),
+            "、 ".join(comp_mean),
+            "、 ".join(comp_read),
 
-            ", ".join(simi_chars),
-            ", ".join(simi_mean),
-            ", ".join(simi_read),
+            "、 ".join(simi_chars),
+            "、 ".join(simi_mean),
+            "、 ".join(simi_read),
 
-            ", ".join(amal_chars),
-            ", ".join(amal_mean),
-            ", ".join(amal_read),
+            "、 ".join(amal_chars),
+            "、 ".join(amal_mean),
+            "、 ".join(amal_read),
 
             self.get_context_patterns(subject),
             self.get_context_sentences(subject),
@@ -185,6 +185,15 @@ class WKImporter(NoteImporter):
             return res
 
         if subject["object"] == "radical":
+            # Try to fetch the svg for this radical
+            for img in subject["data"]["character_images"]:
+                if img["content_type"] == "image/svg+xml":
+                    with self.limiter.ratelimit("wk_import", delay=True):
+                        req = self.session.get(img["url"])
+                    req.raise_for_status()
+                    return f'<wk-radical-svg>{req.text}</wk-radical-svg>'
+
+            # If that somehow fails, emit the old method as fallback
             return f'<i class="radical-{subject["data"]["slug"]}"></i>'
 
         return "Not found"

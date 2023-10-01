@@ -278,11 +278,11 @@ if ("{{Card_Type}}" === "Vocabulary" || "{{Card_Type}}" == "Kana Vocabulary") {
 <script>
 if ("{{Card_Type}}" == "Radical") {
 	var character = `{{Found_in_Characters}}`;
-	var characterarray = character.split(", ");
+	var characterarray = character.split("、 ");
 	var meaning = `{{Found_in_Meaning}}`;
-	var meaningarray = meaning.split(", ");
+	var meaningarray = meaning.split("、 ");
 	var reading = `{{Found_in_Reading}}`;
-	var readingarray = reading.split(", ");
+	var readingarray = reading.split("、 ");
 
 	if (character.toString().length !== 0) {
 		var div = document.getElementById("box-title")
@@ -299,11 +299,11 @@ if ("{{Card_Type}}" == "Radical") {
 	}
 } else if ("{{Card_Type}}" == "Kanji") {
 	var character = `{{Similar_Characters}}`;
-	var characterarray = character.split(", ");
+	var characterarray = character.split("、 ");
 	var meaning = `{{Similar_Meaning}}`;
-	var meaningarray = meaning.split(", ");
+	var meaningarray = meaning.split("、 ");
 	var reading = `{{Similar_Reading}}`;
-	var readingarray = reading.split(", ");
+	var readingarray = reading.split("、 ");
 
 	if (character.toString().length !== 0) {
 		var div = document.getElementById("box-title")
@@ -320,11 +320,11 @@ if ("{{Card_Type}}" == "Radical") {
 	}
 } else if ("{{Card_Type}}" == "Vocabulary" || "{{Card_Type}}" == "Kana Vocabulary") {
 	var character = `{{Components_Characters}}`;
-	var characterarray = character.split(", ");
+	var characterarray = character.split("、 ");
 	var meaning = `{{Components_Meaning}}`;
-	var meaningarray = meaning.split(", ");
+	var meaningarray = meaning.split("、 ");
 	var reading = `{{Components_Reading}}`;
-	var readingarray = reading.split(", ");
+	var readingarray = reading.split("、 ");
 
 	if (character.toString().length !== 0) {
 		var div = document.getElementById("box-title")
@@ -345,15 +345,17 @@ if ("{{Card_Type}}" == "Radical") {
 <!--SCRIPT: Add Radical Combination Characters.-->
 <script>
 var character = `{{Components_Characters}}`;
-var characterarray = character.split(", ");
+var characterarray = character.split("、 ");
 var meaning = `{{Components_Meaning}}`;
-var meaningarray = meaning.split(", ");
+var meaningarray = meaning.split("、 ");
 
 for (var i = 0; i < meaningarray.length; i++){
 	var div = document.getElementById("combination")
 	var element = document.createElement("div");
+	element.style.display = "flex";
+	element.style.alignItems = "center";
 
-	element.innerHTML = "<radical-combination>"+ characterarray[i] + "</radical-combination>" + "" + meaningarray[i].toString().substring(0, 15) + "";
+	element.innerHTML = "<radical-combination><div>"+ characterarray[i] + "</div></radical-combination>" + "<div>" + meaningarray[i].toString().substring(0, 15) + "</div>";
 	div.appendChild(element);
 
 	if (i + 1 != characterarray.length) {
@@ -368,11 +370,11 @@ for (var i = 0; i < meaningarray.length; i++){
 <!--SCRIPT: Add Found in Vocabulary Characters.-->
 <script>
 var character = `{{Found_in_Characters}}`;
-var characterarray = character.split(", ");
+var characterarray = character.split("、 ");
 var meaning = `{{Found_in_Meaning}}`;
-var meaningarray = meaning.split(", ");
+var meaningarray = meaning.split("、 ");
 var reading = `{{Found_in_Reading}}`;
-var readingarray = reading.split(", ");
+var readingarray = reading.split("、 ");
 
 for (var i = 0; i < characterarray.length; i++){
 	var div = document.getElementById("found-in-vocabulary-container")

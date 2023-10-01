@@ -137,6 +137,7 @@ radical {
 	background-color: var(--radical-color);
 	box-shadow: 0px 2px var(--radical-color-dark);
 	color: var(--font-color-light);
+	--color-text: var(--font-color-light);
 	padding: 2px;
 	margin: 0px 2px 0px 0px;
 	border-radius: 4px;
@@ -169,6 +170,7 @@ vocabulary {
 	font-size: 100px;
 	color: var(--font-color-light);
 	background-color: var(--radical-color);
+	--color-text: var(--font-color-light);
 }
 
 .kanji {
@@ -343,6 +345,7 @@ radical-combination {
 	font-family: "Hiragino Kaku Gothic Pro W3";
 	font-size: 24px;
 	color: white;
+	--color-text: white;
 	background-color: var(--radical-color);
 	box-shadow: 0px 2px var(--radical-color-dark);
 	padding: 5px 8px;
@@ -712,4 +715,12 @@ radical-combination a, radical-combination a:link, radical-combination a:visited
 
 .mora > .mora-l {
 	border-bottom-width: var(--border-width);
+}
+
+wk-radical-svg > svg {
+	height: 1em;
+	display: block;
+	margin: 0 auto;
+	padding-top: 0.25em;
+	padding-bottom: 0.25em;
 }
