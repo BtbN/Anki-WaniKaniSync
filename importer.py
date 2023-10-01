@@ -41,6 +41,8 @@ class WKImporter(NoteImporter):
 
         self.pitch_data = self.load_pitch_data()
 
+        self.radical_svg_cache = {}
+
         config = mw.addonManager.getConfig(__name__)
         self.fetch_patterns = config["FETCH_CONTEXT_PATTERNS"]
 
@@ -185,13 +187,19 @@ class WKImporter(NoteImporter):
             return res
 
         if subject["object"] == "radical":
+            if subject["data"]["slug"] in self.radical_svg_cache:
+                return self.radical_svg_cache[subject["data"]["slug"]]
+
             # Try to fetch the svg for this radical
             for img in subject["data"]["character_images"]:
                 if img["content_type"] == "image/svg+xml":
                     with self.limiter.ratelimit("wk_import", delay=True):
                         req = self.session.get(img["url"])
                     req.raise_for_status()
-                    return f'<wk-radical-svg>{req.text}</wk-radical-svg>'
+                    res = f'<wk-radical-svg>{req.text}</wk-radical-svg>'
+
+                    self.radical_svg_cache[subject["data"]["slug"]] = res
+                    return res
 
             # If that somehow fails, emit the old method as fallback
             return f'<i class="radical-{subject["data"]["slug"]}"></i>'
