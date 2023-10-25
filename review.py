@@ -147,38 +147,60 @@ def autoreview_op(col):
     learn_ahead_secs = col.get_preferences().scheduling.learn_ahead_secs
 
     available_assignments = {}
+    search_nodes = []
     assignments_lessons = wk_api_req("assignments?immediately_available_for_lessons=true")
     assignments_reviews = wk_api_req("assignments?immediately_available_for_review=true")
     for assignment in itertools.chain(assignments_lessons["data"], assignments_reviews["data"]):
-        available_assignments[assignment["data"]["subject_id"]] = assignment
+        subj_id = assignment["data"]["subject_id"]
+        available_assignments[subj_id] = assignment
+        search_nodes.append(f"card\\_id:{subj_id}")
 
-    ivl_limit = 14
-    note_ids = col.find_notes(f'prop:ivl>={ivl_limit} -is:suspended "deck:{config["DECK_NAME"]}" "note:{config["NOTE_TYPE_NAME"]}"')
+    search_string = col.build_search_string("-is:suspended", f'"deck:{config["DECK_NAME"]}"', f'"note:{config["NOTE_TYPE_NAME"]}"', col.group_searches(*search_nodes, joiner="OR"))
+    note_ids = col.find_notes(search_string)
+
+    ivl_limit = 21
+
     i = 0
     succ = 0
     for note_id in note_ids:
         i += 1
         report_progress(f"Processing potential reviews {i}/{len(note_ids)}...<br/>{succ} Reviews Submitted", i, len(note_ids))
 
-        all_card_ids = col.find_cards(f'nid:{note_id} "deck:{config["DECK_NAME"]}"')
-        due_card_ids = col.find_cards(f'prop:ivl>={ivl_limit} nid:{note_id} "deck:{config["DECK_NAME"]}"')
-        if len(due_card_ids) != len(all_card_ids):
-            # Not all cards for that note are mature yet, don't submit
-            continue
-
         note = col.get_note(note_id)
         subj_id = int(note["card_id"])
+        assignment = available_assignments[subj_id]
 
-        if subj_id not in available_assignments:
+        card_ids = col.find_cards(col.build_search_string("-is:suspended", f'nid:{note_id}', f'"deck:{config["DECK_NAME"]}"'))
+        if not len(card_ids):
+            print(f"No valid cards for subject {subj_id} one. All suspended?")
             continue
 
-        try:
-            if review_subject(config, col, subj_id, available_assignments[subj_id], learn_ahead_secs):
-                res.card = True
-                res.study_queues = True
-            succ += 1
-        except ReviewException as e:
-            print(str(e))
+        for card_id in card_ids:
+            stats = mw.col.card_stats_data(card_id)
+            if len(stats.revlog) <= 0:
+                print(f"Card {card_id} has never been reviewed. Not submitting review for {subj_id}.")
+                break
+            latest = max(stats.revlog, key=lambda r: r.time)
+            if latest.button_chosen < 2:
+                print(f"Card {card_id} has negative latest review. Not submitting review for {subj_id}.")
+                # Only submit reviews for hard or better.
+                # Not checking for "good" cause a card with a "hard" review can still have an incredibly long interval.
+                break
+            wk_due = wkparsetime(assignment["data"]["available_at"] or assignment["data"]["unlocked_at"]).timestamp()
+            card = col.get_card(card_id)
+            if wk_due > latest.time and card.ivl < ivl_limit:
+                print(f"Card {card_id} has not been reviewed({latest.time}) since it became available on WK({wk_due}) and is not mature({card.ivl}<{ivl_limit}). Not submitting review for {subj_id}.")
+                # Not reviewed since card became available on WK, don't submit.
+                break
+        else:
+            print(f"Submitting review for {subj_id}.")
+            try:
+                if review_subject(config, col, subj_id, assignment, learn_ahead_secs):
+                    res.card = True
+                    res.study_queues = True
+                succ += 1
+            except ReviewException as e:
+                print(str(e))
 
     return res
 
