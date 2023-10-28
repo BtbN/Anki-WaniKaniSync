@@ -4,6 +4,7 @@
     "DECK_NAME": "WaniKani Sync",
     "SYNC_ALL": false,
     "SYNC_DUE_TIME": false,
+    "MATURE_INTERVAL": 14,
     "REPORT_REVIEWS": true,
     "AUTO_SYNC": false,
     "AUTO_REPORT": false,

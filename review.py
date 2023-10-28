@@ -158,7 +158,7 @@ def autoreview_op(col):
     search_string = col.build_search_string("-is:suspended", f'"deck:{config["DECK_NAME"]}"', f'"note:{config["NOTE_TYPE_NAME"]}"', col.group_searches(*search_nodes, joiner="OR"))
     note_ids = col.find_notes(search_string)
 
-    ivl_limit = 21
+    ivl_limit = int(config["MATURE_INTERVAL"])
 
     i = 0
     succ = 0
