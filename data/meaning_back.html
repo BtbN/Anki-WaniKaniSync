@@ -86,15 +86,19 @@ Sections get turned off based on which Card Type is displayed.
 <!--Box Section-->
 <!--For: Radical, Kanji, Vocabulary-->
 <div id=section-box>
-	<div id=box-title></div>
-	<div id=box-container></div>
+  <details>
+    <summary id=box-title></summary>
+    <div id=box-container></div>
+  </details>
 </div>
 
 <!--Found in Vocabulary Section-->
 <!--For: Kanji-->
 <div id=section-found-in-vocabulary>
-	Found in Vocabulary<hr>
-	<div id=found-in-vocabulary-container></div>
+  <details>
+    <summary>Found in Vocabulary<hr></summary>
+    <div id=found-in-vocabulary-container></div>
+  </details>
 </div>
 
 </div> <!-- id=card-back -->
@@ -285,10 +289,8 @@ if ("{{Card_Type}}" == "Radical") {
 	var readingarray = reading.split("、 ");
 
 	if (character.toString().length !== 0) {
-		var div = document.getElementById("box-title")
-		var element = document.createElement("div");
+		var element = document.getElementById("box-title")
 		element.innerHTML = "Found In Kanji<hr>";
-		div.appendChild(element);
 
 		for (var i = 0; i < characterarray.length; i++) {
 			var div = document.getElementById("box-container")
@@ -306,10 +308,8 @@ if ("{{Card_Type}}" == "Radical") {
 	var readingarray = reading.split("、 ");
 
 	if (character.toString().length !== 0) {
-		var div = document.getElementById("box-title")
-		var element = document.createElement("div");
+		var element = document.getElementById("box-title")
 		element.innerHTML = "Visually Similar Kanji<hr>";
-		div.appendChild(element);
 
 		for (var i = 0; i < characterarray.length; i++) {
 			var div = document.getElementById("box-container");
@@ -327,10 +327,8 @@ if ("{{Card_Type}}" == "Radical") {
 	var readingarray = reading.split("、 ");
 
 	if (character.toString().length !== 0) {
-		var div = document.getElementById("box-title")
-		var element = document.createElement("div");
+		var element = document.getElementById("box-title")
 		element.innerHTML = "Kanji Composition<hr>";
-		div.appendChild(element);
 
 		for (var i = 0; i < characterarray.length; i++) {
 			var div = document.getElementById("box-container")
