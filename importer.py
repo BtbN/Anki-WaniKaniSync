@@ -264,11 +264,15 @@ class WKImporter(NoteImporter):
             if reading["accepted_answer"] and subject["object"] != "kanji":
                 if reading["primary"]:
                     txt = f'<reading>{cur_reading}</reading>'
+                    res["primary"].insert(0, txt)
                 else:
                     txt = cur_reading
-                res["primary"].append(txt)
+                    res["primary"].append(txt)
             if reading["accepted_answer"]:
-                res["accepted"].append(cur_reading)
+                if reading["primary"]:
+                    res["accepted"].insert(0, cur_reading)
+                else:
+                    res["accepted"].append(cur_reading)
             if "type" in reading:
                 if reading["type"] not in res:
                     res[reading["type"]] = []
@@ -276,7 +280,10 @@ class WKImporter(NoteImporter):
                     txt = f'<reading>{cur_reading}</reading>'
                 else:
                     txt = cur_reading
-                res[reading["type"]].append(txt)
+                if reading["primary"]:
+                    res[reading["type"]].insert(0, txt)
+                else:
+                    res[reading["type"]].append(txt)
         if subject["object"] == "kana_vocabulary":
             cur_reading = self.apply_pitch_pattern(subject, subject["data"]["characters"].strip())
             res["primary"].append(f"<reading>{cur_reading}</reading>")
