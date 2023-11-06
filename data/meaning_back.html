@@ -289,15 +289,18 @@ if ("{{Card_Type}}" == "Radical") {
 	var readingarray = reading.split("、 ");
 
 	if (character.toString().length !== 0) {
-		var element = document.getElementById("box-title")
+		var element = document.getElementById("box-title");
 		element.innerHTML = "Found In Kanji<hr>";
 
 		for (var i = 0; i < characterarray.length; i++) {
-			var div = document.getElementById("box-container")
+			var div = document.getElementById("box-container");
 			var element = document.createElement("div");
 			element.innerHTML = "<div id=box-character>" + characterarray[i] + "<div id=box-meaning>" + readingarray[i] + "<br>" + meaningarray[i] + "</div></div>";
 			div.appendChild(element);
 		}
+	} else {
+		var element = document.getElementById("section-box");
+		element.remove();
 	}
 } else if ("{{Card_Type}}" == "Kanji") {
 	var character = `{{Similar_Characters}}`;
@@ -317,6 +320,9 @@ if ("{{Card_Type}}" == "Radical") {
 			element.innerHTML = "<div id=box-character>" + characterarray[i] + "<div id=box-meaning>" + readingarray[i] + "<br>" + meaningarray[i].toString().substring(0, 15) + "</div></div>";
 			div.appendChild(element);
 		}
+	} else {
+		var element = document.getElementById("section-box");
+		element.remove();
 	}
 } else if ("{{Card_Type}}" == "Vocabulary" || "{{Card_Type}}" == "Kana Vocabulary") {
 	var character = `{{Components_Characters}}`;
@@ -327,16 +333,22 @@ if ("{{Card_Type}}" == "Radical") {
 	var readingarray = reading.split("、 ");
 
 	if (character.toString().length !== 0) {
-		var element = document.getElementById("box-title")
+		var element = document.getElementById("box-title");
 		element.innerHTML = "Kanji Composition<hr>";
 
 		for (var i = 0; i < characterarray.length; i++) {
-			var div = document.getElementById("box-container")
+			var div = document.getElementById("box-container");
 			var element = document.createElement("div");
 			element.innerHTML = "<div id=box-character>" + characterarray[i] + "<div id=box-meaning>" + readingarray[i] + "<br>" + meaningarray[i].toString().substring(0, 15) + "</div></div>";
 			div.appendChild(element);
 		}
+	} else {
+		var element = document.getElementById("section-box");
+		element.remove();
 	}
+} else {
+	var element = document.getElementById("section-box");
+	element.remove();
 }
 </script>
 
