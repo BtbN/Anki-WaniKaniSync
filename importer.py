@@ -376,7 +376,10 @@ class WKImporter(NoteImporter):
         def audio_sort(audio):
             for i in range(0, len(readings)):
                 if readings[i]["reading"] == audio["metadata"]["pronunciation"]:
-                    return 1000 + (i*1000) + audio["metadata"]["voice_actor_id"]
+                    ret = 1000 + (i*1000) + audio["metadata"]["voice_actor_id"]
+                    if not readings[i]["primary"]:
+                        ret += 1000000
+                    return ret
             return audio["metadata"]["voice_actor_id"]
 
         for audio in sorted(audios, key=audio_sort):
