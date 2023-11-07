@@ -256,37 +256,40 @@ class WKImporter(NoteImporter):
     def get_readings(self, subject):
         readings = subject["data"]["readings"] if "readings" in subject["data"] else []
         res = {
-            "primary": [],
-            "accepted": []
+            "primary": [[],[]],
+            "accepted": [[],[]]
         }
+
         for reading in readings:
             cur_reading = self.apply_pitch_pattern(subject, reading["reading"].strip())
             if reading["accepted_answer"] and subject["object"] != "kanji":
                 if reading["primary"]:
                     txt = f'<reading>{cur_reading}</reading>'
-                    res["primary"].insert(0, txt)
+                    res["primary"][0].append(txt)
                 else:
                     txt = cur_reading
-                    res["primary"].append(txt)
+                    res["primary"][1].append(txt)
             if reading["accepted_answer"]:
                 if reading["primary"]:
-                    res["accepted"].insert(0, cur_reading)
+                    res["accepted"][0].append(cur_reading)
                 else:
-                    res["accepted"].append(cur_reading)
+                    res["accepted"][1].append(cur_reading)
             if "type" in reading:
                 if reading["type"] not in res:
-                    res[reading["type"]] = []
+                    res[reading["type"]] = [[],[]]
                 if reading["primary"]:
                     txt = f'<reading>{cur_reading}</reading>'
+                    res[reading["type"]][0].append(txt)
                 else:
-                    txt = cur_reading
-                if reading["primary"]:
-                    res[reading["type"]].insert(0, txt)
-                else:
-                    res[reading["type"]].append(txt)
+                    res[reading["type"]][1].append(cur_reading)
+
         if subject["object"] == "kana_vocabulary":
             cur_reading = self.apply_pitch_pattern(subject, subject["data"]["characters"].strip())
             res["primary"].append(f"<reading>{cur_reading}</reading>")
+
+        for key in res:
+            res[key] = res[key][0] + res[key][1]
+
         return res
 
     def apply_pitch_internal(self, reading, accent):
