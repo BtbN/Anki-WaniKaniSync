@@ -285,7 +285,7 @@ class WKImporter(NoteImporter):
 
         if subject["object"] == "kana_vocabulary":
             cur_reading = self.apply_pitch_pattern(subject, subject["data"]["characters"].strip())
-            res["primary"].append(f"<reading>{cur_reading}</reading>")
+            res["primary"][0].append(f"<reading>{cur_reading}</reading>")
 
         for key in res:
             res[key] = res[key][0] + res[key][1]
