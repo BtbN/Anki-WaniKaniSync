@@ -41,9 +41,21 @@ qconnect(update_html_action.triggered, do_update_html)
 menu.addAction(update_html_action)
 
 
+just_loaded = False
+def on_load():
+    global just_loaded
+    just_loaded = True
+gui_hooks.profile_did_open.append(on_load)
+
+def on_synced():
+    global just_loaded
+    if just_loaded:
+        auto_sync()
+    just_loaded = False
+    auto_autoreview()
+gui_hooks.sync_did_finish.append(on_synced)
+
 gui_hooks.reviewer_did_answer_card.append(analyze_answer)
-gui_hooks.sync_did_finish.append(auto_sync)
-gui_hooks.sync_did_finish.append(auto_autoreview)
 
 
 install_play_all_audio()
