@@ -42,8 +42,8 @@ menu.addAction(update_html_action)
 
 
 gui_hooks.reviewer_did_answer_card.append(analyze_answer)
-gui_hooks.profile_did_open.append(auto_sync)
-gui_hooks.profile_did_open.append(auto_autoreview)
+gui_hooks.sync_did_finish.append(auto_sync)
+gui_hooks.sync_did_finish.append(auto_autoreview)
 
 
 install_play_all_audio()
