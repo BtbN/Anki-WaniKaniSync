@@ -415,8 +415,8 @@ if (typedAnswer_element) {
 	var typedAnswerLower = "";
 }
 
-var meaningWhitelist = `{{Meaning_Whitelist}}`.replace("'", "").toLowerCase().split(", ");
-var readingWhitelist = `{{Reading_Whitelist}}`.replace("'", "").toLowerCase().split(", ");
+var meaningWhitelist = `{{Meaning_Whitelist}}`.toLowerCase().split(", ");
+var readingWhitelist = `{{Reading_Whitelist}}`.toLowerCase().split(", ");
 var correctAnswers = [];
 var correctText = document.getElementById("correct");
 
@@ -454,7 +454,7 @@ if (`{{Card}}` === "Meaning") {
 
 if (typedAnswerLower != "") {
 	// answer can contain HTML tags, filter them
-	correctAnswers = correctAnswers.map(a => a.replace(/<\/?[^>]+?(>|$)/g, ""));
+	correctAnswers = correctAnswers.map(a => a.replace(/<\/?[^>]+?(>|$)/g, "").replace("'", ""));
 
 	var answerDiv = document.createElement("div");
 	answerDiv.setAttribute("id", "typeans");
