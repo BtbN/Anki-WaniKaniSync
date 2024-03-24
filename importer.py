@@ -2,6 +2,7 @@ from anki.importing.noteimp import NoteImporter, ForeignNote, UPDATE_MODE
 from aqt import mw
 
 import pathlib, shutil
+import json
 import lzma
 import html
 import csv
@@ -24,7 +25,7 @@ class WKImporter(NoteImporter):
         "Similar_Characters", "Similar_Meaning", "Similar_Reading",
         "Found_in_Characters", "Found_in_Meaning", "Found_in_Reading",
         "Context_Patterns", "Context_Sentences",
-        "Audio"
+        "Audio", "Keisei"
     ]
 
     def __init__(self, collection, model, subjects, sub_subjects, study_mats):
@@ -40,6 +41,7 @@ class WKImporter(NoteImporter):
         self.limiter = Limiter(RequestRate(100, Duration.MINUTE))
 
         self.pitch_data = self.load_pitch_data()
+        self.keisei_data = self.load_keisei_data()
 
         self.radical_svg_cache = {}
 
@@ -72,6 +74,28 @@ class WKImporter(NoteImporter):
                                 raise Exception("Invalid accent sub-data")
                             if id not in res:
                                 res[id] = list(zip(d[0], d[1]))
+
+        return res
+
+    def load_keisei_data(self):
+        keiseidir = pathlib.Path(__file__).parent.resolve() / "keisei"
+        kanjifile = keiseidir / "kanji.json.xz"
+        phoneticfile = keiseidir / "phonetic.json.xz"
+        wkkanjifile = keiseidir / "wk_kanji.json.xz"
+
+        res = {}
+
+        with kanjifile.open("rb") as fc:
+            with lzma.open(fc, mode="rt", encoding="utf-8") as f:
+                res["kanji"] = json.load(f)
+
+        with phoneticfile.open("rb") as fc:
+            with lzma.open(fc, mode="rt", encoding="utf-8") as f:
+                res["phonetic"] = json.load(f)
+
+        with wkkanjifile.open("rb") as fc:
+            with lzma.open(fc, mode="rt", encoding="utf-8") as f:
+                res["wk_kanji"] = json.load(f)
 
         return res
 
@@ -140,6 +164,8 @@ class WKImporter(NoteImporter):
             self.get_context_sentences(subject),
 
             self.ensure_audio(subject),
+
+            self.get_keisei(subject),
 
             "Lesson_" + str(data["level"]) + " " + subject["object"].title()
         ]
@@ -401,6 +427,104 @@ class WKImporter(NoteImporter):
 
         return res
 
+    def get_keisei(self, subject):
+        res = []
+        data = ["", "", "", ""]
+
+        if subject["object"] == "radical":
+            item = subject["data"]["characters"]
+            if not item or item not in self.keisei_data["phonetic"]:
+                return "nonradical"
+
+            data[0] = "phonetic"
+
+            ph_item = self.keisei_data["phonetic"][item]
+            if ph_item["wk-radical"]:
+                data[1] += "R"
+                res.append(ph_item["wk-radical"].replace("-", " ").title())
+
+            kj_item = self.keisei_data["kanji"][item] if item in self.keisei_data["kanji"] else None
+            if kj_item:
+                data[1] += "K"
+                if item in self.keisei_data["wk_kanji"]:
+                    meaning = self.keisei_data["wk_kanji"][item]["meaning"].split(", ")[0].title()
+                    res.append(meaning + ", " + self.get_keisei_reading(item))
+                else:
+                    res.append("Non-WK, -")
+
+            data[2] = item
+            data[3] = "・".join(ph_item["readings"])
+
+            for compound in sorted(ph_item["compounds"], key=self.get_keisei_level):
+                if compound in self.keisei_data["wk_kanji"]:
+                    meaning = self.keisei_data["wk_kanji"][compound]["meaning"].split(", ")[0]
+                    res.append(f"{compound}, {self.get_keisei_reading(compound)}, {meaning.title()}")
+                else:
+                    res.append(f"{compound}, -, Non-WK")
+        elif subject["object"] == "kanji":
+            item = subject["data"]["characters"]
+            if not item or item not in self.keisei_data["kanji"]:
+                return "unprocessed"
+
+            kj_item = self.keisei_data["kanji"][item]
+            kanjitype = kj_item["type"]
+
+            if kanjitype != "comp_phonetic" and item not in self.keisei_data["phonetic"]:
+                return kanjitype
+
+            if item in self.keisei_data["phonetic"]:
+                data[0] = "phonetic"
+                component = item
+            else:
+                data[0] = "compound"
+                component = kj_item["phonetic"]
+
+            ph_comp = self.keisei_data["phonetic"][component]
+
+            rad = ph_comp["wk-radical"]
+            if rad:
+                data[1] += "R"
+                res.append(rad.replace("-", " ").title())
+
+            if component in self.keisei_data["kanji"]:
+                data[1] += "K"
+                if component in self.keisei_data["wk_kanji"]:
+                    meaning = self.keisei_data["wk_kanji"][component]["meaning"].split(", ")[0].title()
+                    res.append(meaning + ", " + self.get_keisei_reading(component))
+                else:
+                    res.append("Non-WK, -")
+
+            data[2] = item
+            data[3] = "・".join(ph_comp["readings"])
+            if kanjitype == "comp_phonetic":
+                data.append(kj_item["semantic"])
+
+            for compound in sorted(ph_comp["compounds"], key=self.get_keisei_level):
+                if compound in self.keisei_data["wk_kanji"]:
+                    meaning = self.keisei_data["wk_kanji"][compound]["meaning"].split(", ")[0]
+                    res.append(f"{compound}, {self.get_keisei_reading(compound)}, {meaning.title()}")
+                else:
+                    res.append(f"{compound}, -, Non-WK")
+        else:
+            return ""
+
+        return " | ".join([", ".join(data)] + res)
+
+    def get_keisei_reading(self, item):
+        result = []
+        if item in self.keisei_data["kanji"]:
+            result = self.keisei_data["kanji"][item]["readings"]
+        elif item in self.keisei_data["phonetic"]:
+            result = self.keisei_data["phonetic"][item]["readings"]
+        else:
+            result = self.keisei_data["wk_kanji"][item]["readings"].split(", ")
+        return result[0]
+
+    def get_keisei_level(self, item):
+        if item in self.keisei_data["wk_kanji"]:
+            return self.keisei_data["wk_kanji"][item]["level"]
+        return 100
+
     def html_newlines(self, inp):
         return inp.replace("\r", "").replace("\n", "<br/>")
 
@@ -446,6 +570,17 @@ def ensure_deck(col, note_name, deck_name):
         ret = True
     else:
         field_names = col.models.field_names(model)
+
+        # Add missing fields at the end. Most notably, the Keisei one.
+        while len(field_names) < len(WKImporter.FIELDS):
+            col.models.add_field(model, col.models.new_field(WKImporter.FIELDS[len(field_names)]))
+            field_names = col.models.field_names(model)
+            ret = True
+
+        if ret:
+            col.models.update_dict(model)
+            model = col.models.by_name(note_name)
+
         if field_names != WKImporter.FIELDS:
             raise Exception("Existing WaniKani deck does not match expected field layout!")
 
