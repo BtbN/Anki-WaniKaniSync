@@ -494,7 +494,7 @@ class WKImporter(NoteImporter):
                 else:
                     res.append("Non-WK, -")
 
-            data[2] = item
+            data[2] = component
             data[3] = "・".join(ph_comp["readings"])
             if kanjitype == "comp_phonetic":
                 data.append(kj_item["semantic"])
