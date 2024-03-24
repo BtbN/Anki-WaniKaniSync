@@ -379,13 +379,13 @@ if ("{{Card_Type}}" == "Kanji" || "{{Card_Type}}" == "Radical") {
 	if (data[0] == "compound" || data[0] == "phonetic") {
 		if (data[0] == "compound") {
 			// Backticks needed for radicals with "
-			description.innerHTML = "The kanji 「<ja>" + `{{Characters}}` + "</ja>」 was created using semantic-phonetic composition!<br><br>The phonetic component is 「<ja>" + data[2] + "</ja>」 with the ON reading(s) 「<ja>" + data[3] + "</ja>」 (including rare ones), and the semantic component is 「<ja>" + data[4] + "</ja>」.<br>"
+			description.innerHTML = "The kanji <kanji>" + `{{Characters}}` + "</kanji> was created using semantic-phonetic composition!<br><br>The phonetic component is「<ja>" + data[2] + "</ja>」with the ON reading(s)「<ja>" + data[3] + "</ja>」(including rare ones), and the semantic component is「<ja>" + data[4] + "</ja>」.<br>"
 		} else if (data[0] == "phonetic") {
 			var description = document.getElementById("phonetic-semantic-description");
 			if ("{{Card_Type}}" == "Kanji") {
-				description.innerHTML = "The kanji 「<ja>" + `{{Characters}}` + "</ja>」 is used as a phonetic component in other compounds! Its ON reading(s) are 「<ja>" + data[3] + "</ja>」.<br>"
+				description.innerHTML = "The kanji <kanji>" + `{{Characters}}` + "</kanji> is used as a phonetic component in other compounds!<br>Its ON reading(s) are「<ja>" + data[3] + "</ja>」.<br>"
 			} else {
-				description.innerHTML = "The radical 「<ja>" + `{{Characters}}` + "</ja>」 is used as a phonetic component in other compounds! Its ON reading(s) are 「<ja>" + data[3] + "</ja>」.<br>"				
+				description.innerHTML = "The radical <radical>" + `{{Characters}}` + "</radical> is used as a phonetic component in other compounds!<br>Its ON reading(s) are「<ja>" + data[3] + "</ja>」.<br>"
 			}
 		}
 		var div = document.getElementById("phonetic-container");
@@ -412,13 +412,13 @@ if ("{{Card_Type}}" == "Kanji" || "{{Card_Type}}" == "Radical") {
 			div.appendChild(element);
 		}
 	} else if (data[0] == "unprocessed") {
-		description.innerHTML = "The kanji 「<ja>" + `{{Characters}}` + "</ja>」 has not been added to the WK Userscripts Keisei DB yet, please wait for a future version.<br>";
+		description.innerHTML = "The kanji <kanji>" + `{{Characters}}` + "</kanji> has not been added to the WK Userscripts Keisei DB yet, please wait for a future version.<br>";
 	} else if (data[0] == "nonradical") {
-		description.innerHTML = "The radical 「<ja>" + `{{Characters}}` + "</ja>」 is not considered a phonetic mark!<br>";
+		description.innerHTML = "The radical <radical>" + `{{Characters}}` + "</radical> is not considered a phonetic mark!<br>";
 	} else if (data[0] == "unknown") {
-		description.innerHTML = "The kanji 「<ja>" + `{{Characters}}` + "</ja>」 has an unknown or contested origin, or its phonetic mark is too obscure to be useful. Stay tuned for more information in future versions of WK Userscripts Keisei.";
+		description.innerHTML = "The kanji <kanji>" + `{{Characters}}` + "</kanji> has an unknown or contested origin, or its phonetic mark is too obscure to be useful. Stay tuned for more information in future versions of WK Userscripts Keisei.";
 	} else if (`{{Keisei}}` != "") {
-		description.innerHTML = "The kanji 「<ja>" + `{{Characters}}` + "</ja>」 is not considered a semantic-phonetic composition.<br>Note: " + `{{Keisei}}` + "<br>";
+		description.innerHTML = "The kanji <radical>" + `{{Characters}}` + "</radical> is not considered a semantic-phonetic composition.<br>Note: " + `{{Keisei}}` + "<br>";
 	} else {
         var section = document.getElementById("section-phonetic-semantic");
         section.style.display = "none";
