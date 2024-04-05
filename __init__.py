@@ -42,13 +42,23 @@ menu.addAction(update_html_action)
 
 
 just_loaded = False
+anki_closing = False
+
 def on_load():
-    global just_loaded
+    global just_loaded, anki_closing
     just_loaded = True
+    anki_closing = False
 gui_hooks.profile_did_open.append(on_load)
+
+def on_close():
+    global anki_closing
+    anki_closing = True
+gui_hooks.profile_will_close.append(on_close)
 
 def on_synced():
     global just_loaded
+    if anki_closing:
+        return
     if just_loaded:
         auto_sync()
     just_loaded = False
