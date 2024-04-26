@@ -250,10 +250,6 @@ class WKImporter(NoteImporter):
         if not self.fetch_patterns or subject["object"] == "radical" or subject["object"] == "kanji":
             return res
 
-        # Apparently above level 20 there just are no patterns (yet), use this as speed optimization
-        if subject["data"]["level"] > 20:
-            return res
-
         try:
             with self.limiter.ratelimit("wk_import", delay=True):
                 req = self.session.get(subject["data"]["document_url"])
