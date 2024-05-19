@@ -403,7 +403,7 @@ if ("{{Card_Type}}" == "Kanji" || "{{Card_Type}}" == "Radical") {
 	} else if (data[0] == "unknown") {
 		description.innerHTML = "The kanji <kanji>" + `{{Characters}}` + "</kanji> has an unknown or contested origin, or its phonetic mark is too obscure to be useful. Stay tuned for more information in future versions of WK Userscripts Keisei.";
 	} else if (`{{Keisei}}` != "") {
-		description.innerHTML = "The kanji <radical>" + `{{Characters}}` + "</radical> is not considered a semantic-phonetic composition.<br>Note: " + `{{Keisei}}` + "<br>";
+		description.innerHTML = "The kanji <kanji>" + `{{Characters}}` + "</kanji> is not considered a semantic-phonetic composition.<br>Note: " + `{{Keisei}}` + "<br>";
 	} else {
         var section = document.getElementById("section-phonetic-semantic");
         section.style.display = "none";
