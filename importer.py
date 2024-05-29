@@ -8,12 +8,17 @@ import html
 import csv
 import re
 from urllib.parse import unquote
+from time import sleep
 
-from pyrate_limiter import Duration, RequestRate, Limiter
+from pyrate_limiter import Duration, Rate, Limiter
 
 from .utils import report_progress, show_tooltip
 from .wk_ctx_parser import WKContextParser
 from .wk_api import session as wk_session
+
+
+class ImportCancelledException(Exception):
+    pass
 
 
 class WKImporter(NoteImporter):
@@ -38,7 +43,7 @@ class WKImporter(NoteImporter):
         self.study_mats = study_mats
 
         self.session = wk_session
-        self.limiter = Limiter(RequestRate(100, Duration.MINUTE))
+        self.limiter = Limiter(Rate(100, Duration.MINUTE), raise_when_fail=False, max_delay=250)
 
         self.pitch_data = self.load_pitch_data()
         self.keisei_data = self.load_keisei_data()
@@ -47,6 +52,13 @@ class WKImporter(NoteImporter):
 
         config = mw.addonManager.getConfig(__name__)
         self.fetch_patterns = config["FETCH_CONTEXT_PATTERNS"]
+
+    def do_limit(self, name):
+        while not mw.progress.want_cancel():
+            if self.limiter.try_acquire(name):
+                return True
+            sleep(self.limiter.max_delay / 1000)
+        raise ImportCancelledException("The import was cancelled.")
 
     def fields(self):
         return len(self.FIELDS) + 1 # Final unnamed field is the _tags one
@@ -103,6 +115,9 @@ class WKImporter(NoteImporter):
         res = []
         i = 0
         for subj in self.subjects:
+            if mw.progress.want_cancel():
+                raise ImportCancelledException("The import was cancelled.")
+
             i += 1
             report_progress(f"Importing subject {i}/{len(self.subjects)}...", i, len(self.subjects))
             note = self.makeNote(subj)
@@ -219,8 +234,9 @@ class WKImporter(NoteImporter):
             # Try to fetch the svg for this radical
             for img in subject["data"]["character_images"]:
                 if img["content_type"] == "image/svg+xml":
-                    with self.limiter.ratelimit("wk_import", delay=True):
-                        req = self.session.get(img["url"])
+                    self.do_limit("wk_import")
+
+                    req = self.session.get(img["url"])
                     req.raise_for_status()
                     res = f'<wk-radical-svg>{req.text}</wk-radical-svg>'
 
@@ -251,8 +267,9 @@ class WKImporter(NoteImporter):
             return res
 
         try:
-            with self.limiter.ratelimit("wk_import", delay=True):
-                req = self.session.get(subject["data"]["document_url"])
+            self.do_limit("wk_import")
+
+            req = self.session.get(subject["data"]["document_url"])
             req.raise_for_status()
 
             parser = WKContextParser()
@@ -262,6 +279,8 @@ class WKImporter(NoteImporter):
                 res += "|" + parser.patterns[id]
                 for collo in parser.collos[id]:
                     res += ";" + collo[0] + ";" + collo[1]
+        except ImportCancelledException:
+            raise
         except Exception as e:
             print("Failed parsing context: " + repr(e))
 
@@ -717,6 +736,9 @@ def convert_wk3_notes(col, subjects, note_name):
     processed_subs = {}
     i = 0
     for note_id in note_ids:
+        if mw.progress.want_cancel():
+            raise ImportCancelledException()
+
         note = col.get_note(note_id)
         i += 1
 

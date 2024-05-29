@@ -1,14 +1,25 @@
 from aqt import mw
 
-from pyrate_limiter import Duration, RequestRate, Limiter
+from pyrate_limiter import Duration, Rate, Limiter
 from requests.adapters import HTTPAdapter, Retry
+from time import sleep
 import requests
 
 
 WK_API_BASE="https://api.wanikani.com/v2"
 WK_REV="20170710"
 
-limiter = Limiter(RequestRate(50, Duration.MINUTE))
+limiter = Limiter(Rate(50, Duration.MINUTE), raise_when_fail=False, max_delay=250)
+
+class WKReqCancelledException(Exception):
+    pass
+
+def _do_limit(name):
+    while not mw.progress.want_cancel():
+        if limiter.try_acquire(name):
+            return True
+        sleep(limiter.max_delay / 1000)
+    raise WKReqCancelledException("The request was cancelled.")
 
 session = requests.Session()
 session.mount("https://", HTTPAdapter(max_retries=Retry(total=5, backoff_factor=0.5)))
@@ -24,22 +35,24 @@ def wk_api_req(ep, full=True, data=None, put=False, timeout=5):
         "Wanikani-Revision": WK_REV
     }
 
-    with limiter.ratelimit(api_key, delay=True):
-        if data is not None:
-            if put:
-                res = session.put(f"{WK_API_BASE}/{ep}", headers=headers, json=data, timeout=timeout)
-            else:
-                res = session.post(f"{WK_API_BASE}/{ep}", headers=headers, json=data, timeout=timeout)
+    _do_limit(api_key)
+
+    if data is not None:
+        if put:
+            res = session.put(f"{WK_API_BASE}/{ep}", headers=headers, json=data, timeout=timeout)
         else:
-            res = session.get(f"{WK_API_BASE}/{ep}", headers=headers, timeout=timeout)
+            res = session.post(f"{WK_API_BASE}/{ep}", headers=headers, json=data, timeout=timeout)
+    else:
+        res = session.get(f"{WK_API_BASE}/{ep}", headers=headers, timeout=timeout)
     res.raise_for_status()
     data = res.json()
 
     if full and "object" in data and data["object"] == "collection":
         next_url = data["pages"]["next_url"]
         while next_url:
-            with limiter.ratelimit(api_key, delay=True):
-                res = session.get(next_url, headers=headers, timeout=timeout)
+            if not _do_limit(api_key):
+                return None
+            res = session.get(next_url, headers=headers, timeout=timeout)
             res.raise_for_status()
             new_data = res.json()
 
