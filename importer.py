@@ -112,7 +112,7 @@ class WKImporter(NoteImporter):
         return len(self.model["flds"]) + 1 # Final unnamed field is the _tags one
 
     def initMapping(self):
-        super(NoteImporter, self).initMapping()
+        super().initMapping()
         for i, field in enumerate(self.mapping):
             if field not in self.FIELDS and field != "_tags":
                 self.mapping[i] = None
