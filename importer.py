@@ -443,8 +443,8 @@ class WKImporter(NoteImporter):
             filepath = dest_dir / filename
 
             if not filepath.exists():
-                with self.limiter.ratelimit("wk_import", delay=True):
-                    req = self.session.get(audio["url"])
+                self.do_limit("wk_import")
+                req = self.session.get(audio["url"])
                 req.raise_for_status()
                 filepath.write_bytes(req.content)
 
