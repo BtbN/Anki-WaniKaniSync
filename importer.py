@@ -60,9 +60,6 @@ class WKImporter(NoteImporter):
             sleep(self.limiter.max_delay / 1000)
         raise ImportCancelledException("The import was cancelled.")
 
-    def fields(self):
-        return len(self.FIELDS) + 1 # Final unnamed field is the _tags one
-
     def load_pitch_data(self):
         pitchfile = pathlib.Path(__file__).parent.resolve() / "pitch" / "accent_data.csv.xz"
         res = {}
@@ -111,6 +108,17 @@ class WKImporter(NoteImporter):
 
         return res
 
+    def fields(self):
+        return len(self.model["flds"]) + 1 # Final unnamed field is the _tags one
+
+    def initMapping(self):
+        super(NoteImporter, self).initMapping()
+        for i, field in enumerate(self.mapping):
+            if field not in self.FIELDS and field != "_tags":
+                self.mapping[i] = None
+            if not self.fetch_patterns and field == "Context_Patterns":
+                self.mapping[i] = None
+
     def foreignNotes(self):
         res = []
         i = 0
@@ -141,51 +149,53 @@ class WKImporter(NoteImporter):
         simi_chars, simi_mean, simi_read = self.get_components(subject, "visually_similar_subject_ids")
         amal_chars, amal_mean, amal_read = self.get_components(subject, "amalgamation_subject_ids")
 
+        field_values = {
+            "card_id":               subject["id"],
+            "sort_id":               self.get_sort_id(subject),
+            "Characters":            f'<a href="{data["document_url"]}">{self.get_character(subject)}</a>',
+            "Card_Type":             subject["object"].replace("_", " ").title(),
+            "Word_Type":             ", ".join(data["parts_of_speech"]) if "parts_of_speech" in data else "",
+
+            "Meaning":               ", ".join(meanings),
+            "Meaning_Mnemonic":      self.html_newlines(((data.get("meaning_mnemonic", "") or "") + meaning_note).strip()),
+            "Meaning_Hint":          self.html_newlines(data.get("meaning_hint", "") or ""),
+            "Meaning_Whitelist":     ", ".join(meanings_whl + meanings + meaning_synonyms),
+
+            "Reading":               ", ".join(readings.get("primary", [])),
+            "Reading_Onyomi":        ", ".join(readings.get("onyomi", [])),
+            "Reading_Kunyomi":       ", ".join(readings.get("kunyomi", [])),
+            "Reading_Nanori":        ", ".join(readings.get("nanori", [])),
+            "Reading_Whitelist":     ", ".join(readings.get("accepted", [])),
+            "Reading_Mnemonic":      self.html_newlines(((data.get("reading_mnemonic", "") or "") + reading_note).strip()),
+            "Reading_Hint":          self.html_newlines(data.get("reading_hint", "") or ""),
+
+            "Components_Characters": "、 ".join(comp_chars),
+            "Components_Meaning":    "、 ".join(comp_mean),
+            "Components_Reading":    "、 ".join(comp_read),
+
+            "Similar_Characters":    "、 ".join(simi_chars),
+            "Similar_Meaning":       "、 ".join(simi_mean),
+            "Similar_Reading":       "、 ".join(simi_read),
+
+            "Found_in_Characters":   "、 ".join(amal_chars),
+            "Found_in_Meaning":      "、 ".join(amal_mean),
+            "Found_in_Reading":      "、 ".join(amal_read),
+
+            "Context_Patterns":      self.get_context_patterns(subject),
+            "Context_Sentences":     self.get_context_sentences(subject),
+
+            "Audio":                 self.ensure_audio(subject),
+
+            "Keisei":                self.get_keisei(subject),
+
+            "_tags":                 "Lesson_" + str(data["level"]) + " " + subject["object"].title()
+        }
+
         note = ForeignNote()
-
-        note.fields = [
-            subject["id"],
-            self.get_sort_id(subject),
-            f'<a href="{data["document_url"]}">{self.get_character(subject)}</a>',
-            subject["object"].replace("_", " ").title(),
-            ", ".join(data["parts_of_speech"]) if "parts_of_speech" in data else "",
-
-            ", ".join(meanings),
-            self.html_newlines(((data.get("meaning_mnemonic", "") or "") + meaning_note).strip()),
-            self.html_newlines(data.get("meaning_hint", "") or ""),
-            ", ".join(meanings_whl + meanings + meaning_synonyms),
-
-            ", ".join(readings.get("primary", [])),
-            ", ".join(readings.get("onyomi", [])),
-            ", ".join(readings.get("kunyomi", [])),
-            ", ".join(readings.get("nanori", [])),
-            ", ".join(readings.get("accepted", [])),
-            self.html_newlines(((data.get("reading_mnemonic", "") or "") + reading_note).strip()),
-            self.html_newlines(data.get("reading_hint", "") or ""),
-
-            "、 ".join(comp_chars),
-            "、 ".join(comp_mean),
-            "、 ".join(comp_read),
-
-            "、 ".join(simi_chars),
-            "、 ".join(simi_mean),
-            "、 ".join(simi_read),
-
-            "、 ".join(amal_chars),
-            "、 ".join(amal_mean),
-            "、 ".join(amal_read),
-
-            self.get_context_patterns(subject),
-            self.get_context_sentences(subject),
-
-            self.ensure_audio(subject),
-
-            self.get_keisei(subject),
-
-            "Lesson_" + str(data["level"]) + " " + subject["object"].title()
-        ]
-
-        note.fields = [str(f) for f in note.fields]
+        note.fields = [""] * len(self.mapping)
+        for i, field in enumerate(self.mapping):
+            if field in field_values:
+                note.fields[i] = str(field_values[field])
 
         return note
 
@@ -586,18 +596,22 @@ def ensure_deck(col, note_name, deck_name):
     else:
         field_names = col.models.field_names(model)
 
-        # Add missing fields at the end. Most notably, the Keisei one.
-        while len(field_names) < len(WKImporter.FIELDS):
-            col.models.add_field(model, col.models.new_field(WKImporter.FIELDS[len(field_names)]))
-            field_names = col.models.field_names(model)
-            ret = True
+        # Add missing fields. Most notably, the Keisei one.
+        for field in WKImporter.FIELDS:
+            if field not in field_names:
+                col.models.add_field(model, col.models.new_field(field))
+                ret = True
 
         if ret:
             col.models.update_dict(model)
             model = col.models.by_name(note_name)
+            field_names = col.models.field_names(model)
 
-        if field_names != WKImporter.FIELDS:
-            raise Exception("Existing WaniKani deck does not match expected field layout!")
+        if not all(field in field_names for field in WKImporter.FIELDS):
+            raise Exception("Existing WaniKani deck lacks expected fields!")
+
+        if field_names[0] != WKImporter.FIELDS[0]:
+            raise Exception("First field in WaniKani deck is not " + WKImporter.FIELDS[0])
 
     deck_id = col.decks.id(deck_name, create=False)
     if not deck_id:
