@@ -9,7 +9,7 @@ import re
 
 def fetch_10ten_data():
     s = requests.Session()
-    req = s.get("https://data.10ten.study/jpdict/reader/version-en.json")
+    req = s.get("https://data.10ten.life/jpdict/reader/version-en.json")
     req.raise_for_status()
     version_info = req.json()
 
@@ -22,7 +22,7 @@ def fetch_10ten_data():
 
     # format from: https://github.com/birchill/jpdict-idb/blob/main/src/words.ts
     for part in range(1, parts + 1):
-        req = s.get(f"https://data.10ten.study/jpdict/reader/words/en/{major}.{minor}.{patch}-{part}.jsonl")
+        req = s.get(f"https://data.10ten.life/jpdict/reader/words/en/{major}.{minor}.{patch}-{part}.jsonl")
         req.raise_for_status()
         for line in req.iter_lines():
             data = json.loads(line)
