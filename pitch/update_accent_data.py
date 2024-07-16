@@ -6,6 +6,12 @@ import json
 import sys
 import re
 
+# Needed by requests to decode 10ten data
+try:
+    import brotli
+except ImportError:
+    import brotlicffi
+
 
 def fetch_10ten_data():
     s = requests.Session()
