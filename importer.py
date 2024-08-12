@@ -434,7 +434,7 @@ class WKImporter(NoteImporter):
                     if not readings[i]["primary"]:
                         ret += 1000000
                     return ret
-            return audio["metadata"]["voice_actor_id"]
+            return hash(audio["metadata"]["pronunciation"]) + 2000000 + 1000*len(readings)
 
         for audio in sorted(audios, key=audio_sort):
             if audio["content_type"] != "audio/mpeg":
