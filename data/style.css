@@ -198,9 +198,17 @@ vocabulary {
 	text-decoration: none !important;
 }
 
+#meaning-title p {
+	margin-bottom: 0px;
+}
+
 #meanings {
 	font-size: 14px;
-	line-height: 0.5;
+	margin: 0px;
+}
+
+#meanings p {
+	margin: 0px;
 }
 
 .explanation {
