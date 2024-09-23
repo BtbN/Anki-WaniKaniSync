@@ -14,6 +14,27 @@ if (answerDiv !== null && ["TEXTAREA", "INPUT"].includes(answerDiv.nodeName)) {
 		wanakana.bind(answerDiv);
 		answerDiv.style.fontFamily = "Hiragino Kaku Gothic Pro W3";
 	}
+	if (`{{Card}}` === "Reading" && `{{Card_Type}}` == "Kanji") {
+		var readingWhitelist = `{{Reading_Whitelist}}`.toLowerCase().split(", ");
+
+		var readingAll = `{{Reading_Onyomi}}`.toLowerCase().split(", ");
+		readingAll = readingAll.concat(`{{Reading_Kunyomi}}`.toLowerCase().split(", "));
+		var readingWarning = readingAll.filter(elem => !readingWhitelist.includes(elem));
+
+		var orig_cb = answerDiv.onkeypress;
+		answerDiv.onkeypress = function(event) {
+			if (event.key === "Enter") {
+				var answers = answerDiv.value.split(/[、,]\s*/);
+				if (answers.every(v => readingAll.includes(v)) && answers.some(v => readingWarning.includes(v)) && answerDiv.style.backgroundColor != "yellow") {
+					answerDiv.style.backgroundColor = "yellow";
+				} else {
+					orig_cb(event);
+				}
+			} else {
+				answerDiv.style.backgroundColor = "";
+			}
+		}
+	}
 }
 </script>
 
