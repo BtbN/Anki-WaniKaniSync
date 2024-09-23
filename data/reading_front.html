@@ -28,12 +28,19 @@ if (answerDiv !== null && ["TEXTAREA", "INPUT"].includes(answerDiv.nodeName)) {
 			if (event.key === "Enter") {
 				var answers = answerDiv.value.split(/[、,]\s*/);
 				if (answers.every(v => readingAll.includes(v)) && answers.some(v => readingWarning.includes(v)) && answerDiv.style.backgroundColor != "yellow") {
+					var oBg = answerDiv.style.backgroundColor;
+					var oCl = answerDiv.style.color;
+
+					answerDiv.style.color = "black";
 					answerDiv.style.backgroundColor = "yellow";
+
+					setTimeout(function() {
+						answerDiv.style.color = oCl;
+						answerDiv.style.backgroundColor = oBg;
+					}, 1200);
 				} else {
 					orig_cb(event);
 				}
-			} else {
-				answerDiv.style.backgroundColor = "";
 			}
 		}
 	}
