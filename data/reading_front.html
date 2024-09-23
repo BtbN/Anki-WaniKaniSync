@@ -19,6 +19,8 @@ if (answerDiv !== null && ["TEXTAREA", "INPUT"].includes(answerDiv.nodeName)) {
 
 		var readingAll = `{{Reading_Onyomi}}`.toLowerCase().split(", ");
 		readingAll = readingAll.concat(`{{Reading_Kunyomi}}`.toLowerCase().split(", "));
+		readingAll = readingAll.map(a => a.replace(/<\/?[^>]+?(>|$)/g, "")); // filter HTML tags which can be in the Kun/On readings
+
 		var readingWarning = readingAll.filter(elem => !readingWhitelist.includes(elem));
 
 		var orig_cb = answerDiv.onkeypress;
