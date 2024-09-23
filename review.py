@@ -14,6 +14,21 @@ from .sync import update_due_time_from_assignment
 class ReviewException(Exception):
     pass
 
+
+def update_due_time(config, col, assignment, learn_ahead_secs):
+    if col:
+        res = OpChanges()
+        if update_due_time_from_assignment(config, col, assignment, learn_ahead_secs) > 0:
+            res.card = True
+            res.study_queues = True
+        return res
+    else:
+        QueryOp(
+            parent=mw,
+            op=lambda real_col: update_due_time(config, real_col, assignment, learn_ahead_secs),
+            success=lambda cnt: None
+        ).run_in_background()
+
 def review_subject(config, col, subject_id, assignment=None, learn_ahead_secs=0):
     try:
         if assignment:
@@ -41,7 +56,7 @@ def review_subject(config, col, subject_id, assignment=None, learn_ahead_secs=0)
                 if not started:
                     raise ReviewException("Failed to submit review to WaniKani:<br/>Card not available for review yet.")
                 elif config["SYNC_DUE_TIME"]:
-                    update_due_time_from_assignment(config, col, res["data"][0], learn_ahead_secs)
+                    update_due_time(config, col, res["data"][0], learn_ahead_secs)
                     return True
                 return False
 
@@ -52,7 +67,7 @@ def review_subject(config, col, subject_id, assignment=None, learn_ahead_secs=0)
             })
 
             if config["SYNC_DUE_TIME"]:
-                update_due_time_from_assignment(config, col, update_res["resources_updated"]["assignment"], learn_ahead_secs)
+                update_due_time(config, col, update_res["resources_updated"]["assignment"], learn_ahead_secs)
                 return True
         else:
             raise ReviewException("Found an unexpected amount of assignments for this card: " + str(len(res["data"])))
@@ -65,15 +80,12 @@ def review_subject(config, col, subject_id, assignment=None, learn_ahead_secs=0)
     return False
 
 
-def submit_assignment_op(config, col, subject_id):
+def submit_assignment_op(config, subject_id, learn_ahead_secs):
     res = OpChanges()
 
-    learn_ahead_secs = col.get_preferences().scheduling.learn_ahead_secs
-
     try:
-        if review_subject(config, col, subject_id, None, learn_ahead_secs):
-            res.card = True
-            res.study_queues = True
+        if review_subject(config, None, subject_id, None, learn_ahead_secs):
+            raise Exception("review_subject() made changed when it shouldn't.")
 
         print(f"Submitted subject {subject_id} review to WaniKani.")
     except ReviewException as e:
@@ -126,11 +138,13 @@ def analyze_answer(reviewer, card, ease):
             print("Not submitting review to WaniKani, a sibling card has a negative latest review.")
             return
 
+    learn_ahead_secs = mw.col.get_preferences().scheduling.learn_ahead_secs
+
     QueryOp(
         parent=mw,
-        op=lambda col: submit_assignment_op(config, col, subject_id),
+        op=lambda col: submit_assignment_op(config, subject_id, learn_ahead_secs),
         success=lambda cnt: None
-    ).run_in_background()
+    ).without_collection().run_in_background()
 
 
 def autoreview_op(col):

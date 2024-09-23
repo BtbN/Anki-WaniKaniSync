@@ -178,7 +178,7 @@ def update_due_time_from_assignment(config, col, assignment, learn_ahead_secs):
     subject_id = assignment["data"]["subject_id"]
     card_ids = col.find_cards(f'"note:{config["NOTE_TYPE_NAME"]}" "deck:{config["DECK_NAME"]}" card\\_id:{subject_id}')
     if not card_ids:
-        return
+        return 0
 
     if assignment["data"]["burned_at"]:
         # Card is burned: make it a review card, and leave alone due time
