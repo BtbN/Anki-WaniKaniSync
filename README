@@ -14,7 +14,7 @@ since it might heavily mess up your study schedule.
 
 Instead, there is a function to automatically report reviews for all mature (interval >=21 days)
 notes to WaniKani, which can be optionally automatically run on every Anki startup, to over time
-bring your Anki-Profile up to date with your Anki-Progress.
+bring your WK-Profile up to date with your Anki-Progress.
 
 The most simple way to use the AddOn is to only use it to sync the Subjects from WaniKani,
 and periodically update them (WK maintains their dataset quite frequently to include
