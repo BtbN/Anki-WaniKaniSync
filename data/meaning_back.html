@@ -531,7 +531,7 @@ if (`{{Card}}` === "Meaning") {
 
 if (typedAnswerLower != "") {
 	// answer can contain HTML tags, filter them
-	correctAnswers = correctAnswers.map(a => a.replace(/<\/?[^>]+?(>|$)/g, "").replace("'", ""));
+	correctAnswers = correctAnswers.map(a => a.replace(/<\/?[^>]+?(>|$)/g, "").replace("'", "").trim());
 
 	var answerDiv = document.createElement("div");
 	answerDiv.setAttribute("id", "typeans");
@@ -543,7 +543,7 @@ if (typedAnswerLower != "") {
 
 	if (typedAnswerLower === "") {
 		answerDiv.style.display = "none";
-	} else if (typedAnswerLower.split(/[、,]\s*/).every(v => correctAnswers.includes(v))) {
+	} else if (typedAnswerLower.split(/[、,]\s*/).every(v => correctAnswers.includes(v.trim()))) {
 		answerDiv.classList.add("correct");
 	} else {
 		answerDiv.classList.add("incorrect");
