@@ -169,6 +169,9 @@ def autoreview_op(col):
         available_assignments[subj_id] = assignment
         search_nodes.append(f"card\\_id:{subj_id}")
 
+    if not search_nodes:
+        return res
+
     search_string = col.build_search_string("-is:suspended", f'"deck:{config["DECK_NAME"]}"', f'"note:{config["NOTE_TYPE_NAME"]}"', col.group_searches(*search_nodes, joiner="OR"))
     note_ids = col.find_notes(search_string)
 
