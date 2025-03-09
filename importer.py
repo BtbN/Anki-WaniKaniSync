@@ -637,6 +637,13 @@ def do_update_html():
         show_tooltip("WaniKani note type not found.")
         return
 
+    source_dir = datadir / "files"
+    dest_dir = pathlib.Path(mw.col.media.dir())
+    for source_file in source_dir.iterdir():
+        dest_file = dest_dir / source_file.name
+        if not dest_file.exists():
+            shutil.copy(source_file, dest_file)
+
     model["css"] = (datadir / "style.css").read_text(encoding="utf-8")
 
     for tmpl in model["tmpls"]:

@@ -1,16 +1,32 @@
 @font-face {
-	font-family: "Hiragino Kaku Gothic Pro W3";
-	src: url("_hirakakyprow3.otf");
-}
-
-@font-face {
 	font-family: "Open Sans";
-	src: url("_OpenSans.ttf");
+	src: url("_OpenSans.woff2");
 }
 
 @font-face {
 	font-family: "Ubuntu";
-	src: url("_Ubuntu.ttf");
+	src: url("_Ubuntu.woff2");
+}
+
+@font-face {
+	font-family: "Noto Sans";
+	src: url("_NotoSans.woff2");
+}
+
+@font-face {
+	font-family: "Noto Sans JP";
+	src: url("_NotoSansJP.woff2");
+}
+
+@font-face {
+	font-family: "Noto Sans SC";
+	src: url("_NotoSansSC.woff2");
+}
+
+@font-face {
+	font-family: "Noto Sans Special SC";
+	src: url("_NotoSansSC.woff2");
+	unicode-range: U+5DE9;
 }
 
 .nightMode #card-back {
@@ -166,7 +182,7 @@ vocabulary {
 }
 
 .radical {
-	font-family: "Hiragino Kaku Gothic Pro W3";
+	font-family: "Noto Sans", "Noto Sans Special SC", "Noto Sans JP", "Noto Sans SC", sans-serif;
 	font-size: 100px;
 	color: var(--font-color-light);
 	background-color: var(--radical-color);
@@ -174,14 +190,14 @@ vocabulary {
 }
 
 .kanji {
-	font-family: "Hiragino Kaku Gothic Pro W3";
+	font-family: "Noto Sans", "Noto Sans Special SC", "Noto Sans JP", "Noto Sans SC", sans-serif;
 	font-size: 100px;
 	color: var(--font-color-light);
 	background-color: var(--kanji-color);
 }
 
 .vocabulary {
-	font-family: "Hiragino Kaku Gothic Pro W3";
+	font-family: "Noto Sans", "Noto Sans Special SC", "Noto Sans JP", "Noto Sans SC", sans-serif;
 	font-size: 100px;
 	color: var(--font-color-light);
 	background-color: var(--vocab-color);
@@ -240,7 +256,7 @@ vocabulary {
 
 #vocabulary-reading {
 	font-size: 18px;
-	font-family: "Hiragino Kaku Gothic Pro W3";
+	font-family: "Noto Sans", "Noto Sans Special SC", "Noto Sans JP", "Noto Sans SC", sans-serif;
 	color: var(--meaning-color);
 }
 
@@ -253,7 +269,7 @@ vocabulary {
 #kanji-readings {
 	font-size: 16px;
 	line-height: 2;
-	font-family: "Hiragino Kaku Gothic Pro W3";
+	font-family: "Noto Sans", "Noto Sans Special SC", "Noto Sans JP", "Noto Sans SC", sans-serif;
 	color: var(--meaning-color);
 }
 
@@ -269,7 +285,7 @@ vocabulary {
 }
 
 ja {
-	font-family: "Hiragino Kaku Gothic Pro W3";
+	font-family: "Noto Sans", "Noto Sans Special SC", "Noto Sans JP", "Noto Sans SC", sans-serif;
 }
 
 #button {
@@ -284,13 +300,13 @@ ja {
 }
 
 .notclicked#button {
-	font-family: "Hiragino Kaku Gothic Pro W3";
+	font-family: "Noto Sans", "Noto Sans Special SC", "Noto Sans JP", "Noto Sans SC", sans-serif;
 	background-color: var(--button-color-light);
 	transition-duration: 0.2s;
 }
 
 .clicked#button {
-	font-family: "Hiragino Kaku Gothic Pro W3";
+	font-family: "Noto Sans", "Noto Sans Special SC", "Noto Sans JP", "Noto Sans SC", sans-serif;
 	color: var(--font-color-light);
 	background-color: var(--button-color-dark);
 	transition-duration: 0.2s;
@@ -331,7 +347,7 @@ ja {
 }
 
 #box-character {
-	font-family: "Hiragino Kaku Gothic Pro W3";
+	font-family: "Noto Sans", "Noto Sans Special SC", "Noto Sans JP", "Noto Sans SC", sans-serif;
 	font-size: 72px;
 	color: var(--font-color-light);
 	background-image: linear-gradient(to bottom, #f0a, #dd0093);
@@ -354,7 +370,7 @@ ja {
 }
 
 radical-combination {
-	font-family: "Hiragino Kaku Gothic Pro W3";
+	font-family: "Noto Sans", "Noto Sans Special SC", "Noto Sans JP", "Noto Sans SC", sans-serif;
 	font-size: 24px;
 	color: white;
 	--color-text: white;
@@ -382,7 +398,7 @@ radical-combination a, radical-combination a:link, radical-combination a:visited
 }
 
 .found-in-voc {
-	font-family: "Hiragino Kaku Gothic Pro W3";
+	font-family: "Noto Sans", "Noto Sans Special SC", "Noto Sans JP", "Noto Sans SC", sans-serif;
 	font-size: 26px;
 	background-image: linear-gradient(to bottom, #9B3AF8, #8631D6);
 	width: 50%;
@@ -394,7 +410,7 @@ radical-combination a, radical-combination a:link, radical-combination a:visited
 }
 
 .found-in-voc-reading {
-	font-family: "Hiragino Kaku Gothic Pro W3";
+	font-family: "Noto Sans", "Noto Sans Special SC", "Noto Sans JP", "Noto Sans SC", sans-serif;
 	font-size: 10px;
 	width: 50%;
 	background-color: #a0f;
@@ -487,7 +503,7 @@ radical-combination a, radical-combination a:link, radical-combination a:visited
 }
 #correct reading {
 	font-size: 20px;
-	font-family: "Hiragino Kaku Gothic Pro W3";
+	font-family: "Noto Sans", "Noto Sans Special SC", "Noto Sans JP", "Noto Sans SC", sans-serif;
 }
 .mobile #correct reading {
 	font-size: 24px;
@@ -551,7 +567,7 @@ radical-combination a, radical-combination a:link, radical-combination a:visited
 	align-items: start;
 }
 #phonetic-character {
-	font-family: "Hiragino Kaku Gothic Pro W3";
+	font-family: "Noto Sans", "Noto Sans Special SC", "Noto Sans JP", "Noto Sans SC", sans-serif;
 	font-size: 72px;
 	color: var(--font-color-light);
 	background-image: linear-gradient(to bottom, #0c4, #092);
@@ -564,7 +580,7 @@ radical-combination a, radical-combination a:link, radical-combination a:visited
 	overflow: hidden;
 }
 #radical-character {
-	font-family: "Hiragino Kaku Gothic Pro W3";
+	font-family: "Noto Sans", "Noto Sans Special SC", "Noto Sans JP", "Noto Sans SC", sans-serif;
 	font-size: 72px;
 	color: var(--font-color-light);
 	background-image: linear-gradient(to bottom, #0af, #0093dd);
