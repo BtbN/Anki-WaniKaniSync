@@ -187,6 +187,7 @@ vocabulary {
 	color: var(--font-color-light);
 	background-color: var(--radical-color);
 	--color-text: var(--font-color-light);
+	text-shadow: 2px 2px 0 #0093dd;
 }
 
 .kanji {
@@ -194,6 +195,7 @@ vocabulary {
 	font-size: 100px;
 	color: var(--font-color-light);
 	background-color: var(--kanji-color);
+	text-shadow: 2px 2px 0 #dd0093;
 }
 
 .vocabulary {
@@ -201,6 +203,7 @@ vocabulary {
 	font-size: 100px;
 	color: var(--font-color-light);
 	background-color: var(--vocab-color);
+	text-shadow: 2px 2px 0 #9300dd;
 }
 
 .radical a, .radical a:link, .radical a:visited,
