@@ -678,7 +678,7 @@ def sort_new_cards(col, deck_name):
             tpo = 0
 
         # The Meaning template has the lowest template index(ord), so add it in to have Meaning-Cards first.
-        sort_keys[cid] = int(note["sort_id"]) * 1000 + tpo + card.ord
+        sort_keys[cid] = int(float(note["sort_id"])) * 1000 + tpo + card.ord
 
     card_ids = sorted(card_ids, key=lambda cid: sort_keys[cid])
 
