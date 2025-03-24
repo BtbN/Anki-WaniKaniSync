@@ -661,7 +661,7 @@ def do_update_html():
 
 
 def sort_new_cards(col, deck_name):
-    card_ids = col.find_cards(f'"deck:{deck_name}" is:new')
+    card_ids = col.find_cards(f'"deck:{deck_name}" is:new -is:suspended')
 
     sort_keys = {}
     for cid in card_ids:
