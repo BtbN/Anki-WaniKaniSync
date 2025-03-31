@@ -618,12 +618,43 @@ def ensure_deck(col, note_name, deck_name):
         deck_id = col.decks.id(deck_name, create=True)
         deck = col.decks.get(deck_id)
         deck["mid"] = model["id"]
+
+        deck_preset = col.decks.add_config(deck_name)
+        deck["conf"] = deck_preset_id = deck_preset["id"]
+
         col.decks.save(deck)
 
         model["did"] = deck_id
         col.models.update_dict(model)
 
         ret = True
+    else:
+        deck = col.decks.get(deck_id)
+        deck_preset_id = deck["conf"]
+
+    for lvl in range(1, 61):
+        sub_deck_name = f"{deck_name}::Level {lvl:02}"
+        deck_id = col.decks.id(sub_deck_name, create=False)
+        if not deck_id:
+            deck_id = col.decks.id(sub_deck_name, create=True)
+            deck = col.decks.get(deck_id)
+            deck["mid"] = model["id"]
+            deck["conf"] = deck_preset_id
+            col.decks.save(deck)
+
+            ret = True
+
+        for kind in ["Radicals", "Kanji", "Vocab"]:
+            sub_deck_name = f"{deck_name}::Level {lvl:02}::{kind}"
+            deck_id = col.decks.id(sub_deck_name, create=False)
+            if not deck_id:
+                deck_id = col.decks.id(sub_deck_name, create=True)
+                deck = col.decks.get(deck_id)
+                deck["mid"] = model["id"]
+                deck["conf"] = deck_preset_id
+                col.decks.save(deck)
+
+                ret = True
 
     return ret
 
@@ -705,6 +736,35 @@ def suspend_hidden_notes(col, subjects, note_name):
             col.sched.suspend_notes(note_ids)
 
 
+def assign_subdecks(col, deck_name):
+    card_ids = col.find_cards(f'"deck:{deck_name}"')
+
+    moves = dict()
+    for cid in card_ids:
+        card = col.get_card(cid)
+        note = card.note()
+
+        lvl = int(float(note["sort_id"])) // 100000
+        kind = note["Card_Type"].lower()
+        if kind == "kanji":
+            kind = "Kanji"
+        elif kind == "radical":
+            kind = "Radicals"
+        else:
+            kind = "Vocab"
+        sub_deck_name = f"{deck_name}::Level {lvl:02}::{kind}"
+
+        did = col.decks.id(sub_deck_name, create=False)
+        if not did:
+            continue
+
+        moves.setdefault(did, []).append(cid)
+
+    for did in moves:
+        col.set_deck(moves[did], did)
+    col.save()
+
+
 def ensure_notes(col, subjects, sub_subjects, study_mats, note_name, deck_name):
     model = col.models.by_name(note_name)
     if not model:
@@ -718,6 +778,9 @@ def ensure_notes(col, subjects, sub_subjects, study_mats, note_name, deck_name):
     importer = WKImporter(col, model, subjects, sub_subjects, study_mats)
     importer.initMapping()
     importer.run()
+
+    report_progress("Assigning to correct subdecks...", 100, 100)
+    assign_subdecks(col, deck_name)
 
     report_progress("Suspending hidden subjects...", 100, 100)
     suspend_hidden_notes(col, subjects, note_name)
