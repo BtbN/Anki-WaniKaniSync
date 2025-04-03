@@ -644,7 +644,7 @@ def ensure_deck(col, note_name, deck_name):
 
             ret = True
 
-        for kind in ["Radicals", "Kanji", "Vocab"]:
+        for kind in ["1 - Radicals", "2 - Kanji", "3 - Vocab"]:
             sub_deck_name = f"{deck_name}::Level {lvl:02}::{kind}"
             deck_id = col.decks.id(sub_deck_name, create=False)
             if not deck_id:
@@ -746,12 +746,12 @@ def assign_subdecks(col, deck_name):
 
         lvl = int(float(note["sort_id"])) // 100000
         kind = note["Card_Type"].lower()
-        if kind == "kanji":
-            kind = "Kanji"
-        elif kind == "radical":
-            kind = "Radicals"
+        if kind == "radical":
+            kind = "1 - Radicals"
+        elif kind == "kanji":
+            kind = "2 - Kanji"
         else:
-            kind = "Vocab"
+            kind = "3 - Vocab"
         sub_deck_name = f"{deck_name}::Level {lvl:02}::{kind}"
 
         did = col.decks.id(sub_deck_name, create=False)
