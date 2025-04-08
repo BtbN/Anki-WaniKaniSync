@@ -755,10 +755,13 @@ def assign_subdecks(col, deck_name):
         sub_deck_name = f"{deck_name}::Level {lvl:02}::{kind}"
 
         did = col.decks.id(sub_deck_name, create=False)
-        if not did:
+        if not did or card.did == did:
             continue
 
         moves.setdefault(did, []).append(cid)
+
+    if not moves:
+        return
 
     for did in moves:
         col.set_deck(moves[did], did)
