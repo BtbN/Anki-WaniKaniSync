@@ -791,7 +791,7 @@ def ensure_notes(col, subjects, sub_subjects, study_mats, note_name, deck_name):
     return len(subjects) > 0
 
 
-def convert_wk3_notes(col, subjects, note_name):
+def convert_wk3_notes(col, subjects, note_name, deck_name):
     model = col.models.by_name(note_name)
     if not model:
         raise Exception("Can't convert non-existant model")
@@ -814,7 +814,7 @@ def convert_wk3_notes(col, subjects, note_name):
             subj_by_slug[slug] = {}
         subj_by_slug[slug][subj["object"]] = subj
 
-    note_ids = col.find_notes(f'"note:{note_name}"')
+    note_ids = col.find_notes(f'"note:{note_name}" "deck:{deck_name}"')
     if not note_ids:
         raise Exception("No notes found, can't convert.")
 

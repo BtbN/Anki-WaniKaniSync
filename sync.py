@@ -307,7 +307,7 @@ def do_convert_wk3_op(col):
 
     result.count = len(subjects)
 
-    convert_wk3_notes(col, subjects, config["NOTE_TYPE_NAME"])
+    convert_wk3_notes(col, subjects, config["NOTE_TYPE_NAME"], config["DECK_NAME"])
 
     if ensure_notes(col, subjects, sub_subjects, study_mats, config["NOTE_TYPE_NAME"], config["DECK_NAME"]):
         result.changes.card = True
