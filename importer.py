@@ -557,6 +557,7 @@ class WKImporter(NoteImporter):
 
 def ensure_deck(col, note_name, deck_name):
     datadir = pathlib.Path(__file__).parent.resolve() / "data"
+    config = mw.addonManager.getConfig(__name__)
 
     source_dir = datadir / "files"
     dest_dir = pathlib.Path(col.media.dir())
@@ -631,6 +632,9 @@ def ensure_deck(col, note_name, deck_name):
     else:
         deck = col.decks.get(deck_id)
         deck_preset_id = deck["conf"]
+
+    if not config["CREATE_PER_LEVEL_SUBDECKS"]:
+        return ret
 
     for lvl in range(1, 61):
         sub_deck_name = f"{deck_name}::Level {lvl:02}"
@@ -769,6 +773,8 @@ def assign_subdecks(col, deck_name):
 
 
 def ensure_notes(col, subjects, sub_subjects, study_mats, note_name, deck_name):
+    config = mw.addonManager.getConfig(__name__)
+
     model = col.models.by_name(note_name)
     if not model:
         raise Exception("Can't ensure non-existant model")
@@ -782,8 +788,9 @@ def ensure_notes(col, subjects, sub_subjects, study_mats, note_name, deck_name):
     importer.initMapping()
     importer.run()
 
-    report_progress("Assigning to correct subdecks...", 100, 100)
-    assign_subdecks(col, deck_name)
+    if config["CREATE_PER_LEVEL_SUBDECKS"]:
+        report_progress("Assigning to correct subdecks...", 100, 100)
+        assign_subdecks(col, deck_name)
 
     report_progress("Suspending hidden subjects...", 100, 100)
     suspend_hidden_notes(col, subjects, note_name)
