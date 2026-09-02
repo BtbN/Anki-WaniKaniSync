@@ -56,6 +56,10 @@ SYNC_ALL: Controls whether the AddOn will sync ALL subjects/cards from WaniKani,
           and also turn on due-time syncing and review reporting, and Anki
           should keep WaniKani reasonably up to date with your progress.
 
+SYNC_ONLY_STARTED: Only takes effect if SYNC_ALL is false.
+                   If true, instead of all unlocked subjects, only already started
+                   subjects will be synced.
+
 REPORT_REVIEWS: If enabled, the AddOn will try to submit a review to WaniKani whenever
                 a card is rated Good or Easy, and the sibling card isn't due or was last
                 rated Hard or Again.

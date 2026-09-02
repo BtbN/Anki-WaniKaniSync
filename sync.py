@@ -9,13 +9,18 @@ from .utils import wknow, wkparsetime, report_progress
 
 
 def get_available_subject_ids(config):
-    req = "assignments?unlocked=true&hidden=false"
+    req = "assignments?hidden=false"
+
+    if config["SYNC_ONLY_STARTED"]:
+        req += "&started=true"
+    else:
+        req += "&unlocked=true"
 
     last_sync = config["_LAST_ASSIGNMENTS_SYNC"]
     if last_sync:
         req += "&updated_after=" + last_sync
 
-    report_progress("Fetching unlocked assignments...", 0, 0)
+    report_progress("Fetching assignments...", 0, 0)
 
     config["_LAST_ASSIGNMENTS_SYNC"] = wknow()
     assignments = wk_api_req(req)
