@@ -110,7 +110,8 @@ def fetch_wadoku_data():
             hiras = ["".join(hiras)]
         elif len(sub_accents) != len(hiras):
             # Invalid config, should not happen
-            raise Exception(f"Invalid accent config for {repr(orths)}: {repr(sub_accents)} / {repr(hiras)}")
+            print(f"Invalid accent config for {repr(orths)}: {repr(sub_accents)} / {repr(hiras)}", file=sys.stderr)
+            continue
 
         for orth in orths:
             if orth not in res:
