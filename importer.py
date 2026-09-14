@@ -1,4 +1,4 @@
-from anki.importing.noteimp import NoteImporter, ForeignNote, UPDATE_MODE
+from anki.utils import split_fields
 from aqt import mw
 
 import pathlib, shutil
@@ -21,7 +21,7 @@ class ImportCancelledException(Exception):
     pass
 
 
-class WKImporter(NoteImporter):
+class WKImporter:
     FIELDS = [
         "card_id", "sort_id", "Characters", "Card_Type", "Word_Type",
         "Meaning", "Meaning_Mnemonic", "Meaning_Hint", "Meaning_Whitelist",
@@ -33,11 +33,10 @@ class WKImporter(NoteImporter):
         "Audio", "Keisei"
     ]
 
-    def __init__(self, collection, model, subjects, sub_subjects, study_mats):
-        NoteImporter.__init__(self, collection, None)
-        self.allowHTML = True
-        self.importMode = UPDATE_MODE
+    def __init__(self, collection, model, deck_id, subjects, sub_subjects, study_mats):
+        self.col = collection
         self.model = model
+        self.deck_id = deck_id
         self.subjects = subjects
         self.sub_subjects = sub_subjects
         self.study_mats = study_mats
@@ -108,18 +107,39 @@ class WKImporter(NoteImporter):
 
         return res
 
-    def fields(self):
-        return len(self.model["flds"]) + 1 # Final unnamed field is the _tags one
+    def run(self):
+        data = {
+            "dupe_resolution": "Update",
+            "match_scope": "Notetype",
+            "default_notetype": self.model["id"],
+            "default_deck": self.deck_id,
+            "notes": self.make_notes(),
+        }
 
-    def initMapping(self):
-        super().initMapping()
-        for i, field in enumerate(self.mapping):
-            if field not in self.FIELDS and field != "_tags":
-                self.mapping[i] = None
-            if not self.fetch_patterns and field == "Context_Patterns":
-                self.mapping[i] = None
+        report_progress("Importing notes...", 100, 100)
 
-    def foreignNotes(self):
+        # Reads a JSON-Serialized instance of ForeignData from https://github.com/ankitects/anki/blob/main/rslib/src/import_export/text/mod.rs
+        return self.col.import_json_string(json.dumps(data, ensure_ascii=False)).log
+
+    def load_existing_tags(self):
+        res = {}
+        for flds, tags in self.col.db.execute("select flds, tags from notes where mid = ?", self.model["id"]):
+            res[split_fields(flds)[0]] = tags.split()
+        return res
+
+    def make_tags(self, subject):
+        # Keep user/Anki tags like leech and marked, only replace our own
+        existing = self.existing_tags.get(str(subject["id"]), [])
+        tags = [t for t in existing if not self.is_own_tag(t)]
+        return tags + ["Lesson_" + str(subject["data"]["level"]), subject["object"].title()]
+
+    def is_own_tag(self, tag):
+        tag = tag.lower()
+        return tag.startswith("lesson_") or tag in ("radical", "kanji", "vocabulary", "kana_vocabulary")
+
+    def make_notes(self):
+        self.existing_tags = self.load_existing_tags()
+
         res = []
         i = 0
         for subj in self.subjects:
@@ -128,12 +148,12 @@ class WKImporter(NoteImporter):
 
             i += 1
             report_progress(f"Importing subject {i}/{len(self.subjects)}...", i, len(self.subjects))
-            note = self.makeNote(subj)
+            note = self.make_note(subj)
             if note:
                 res.append(note)
         return res
 
-    def makeNote(self, subject):
+    def make_note(self, subject):
         data = subject["data"]
         if data["hidden_at"]:
             return None
@@ -181,23 +201,24 @@ class WKImporter(NoteImporter):
             "Found_in_Meaning":      "、 ".join(amal_mean),
             "Found_in_Reading":      "、 ".join(amal_read),
 
-            "Context_Patterns":      self.get_context_patterns(subject),
+            # None leaves the existing field untouched
+            "Context_Patterns":      self.get_context_patterns(subject) if self.fetch_patterns else None,
             "Context_Sentences":     self.get_context_sentences(subject),
 
             "Audio":                 self.ensure_audio(subject),
 
             "Keisei":                self.get_keisei(subject),
-
-            "_tags":                 "Lesson_" + str(data["level"]) + " " + subject["object"].title()
         }
 
-        note = ForeignNote()
-        note.fields = [""] * len(self.mapping)
-        for i, field in enumerate(self.mapping):
-            if field in field_values:
-                note.fields[i] = str(field_values[field])
+        fields = []
+        for fld in self.model["flds"]:
+            value = field_values.get(fld["name"])
+            fields.append(None if value is None else str(value))
 
-        return note
+        return {
+            "fields": fields,
+            "tags": self.make_tags(subject),
+        }
 
     def get_user_study(self, subject):
         study_mat = self.study_mats.get(subject["id"], None)
@@ -784,8 +805,7 @@ def ensure_notes(col, subjects, sub_subjects, study_mats, note_name, deck_name):
 
     col.set_aux_notetype_config(model["id"], "lastDeck", deck_id)
 
-    importer = WKImporter(col, model, subjects, sub_subjects, study_mats)
-    importer.initMapping()
+    importer = WKImporter(col, model, deck_id, subjects, sub_subjects, study_mats)
     importer.run()
 
     if config["CREATE_PER_LEVEL_SUBDECKS"]:
